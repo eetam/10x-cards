@@ -1,9 +1,9 @@
 # Dokument wymagań produktu (PRD) - 10xCards
 
 ## 1. Przegląd produktu
-10xCards to aplikacja internetowa, która używa AI do szybkiego tworzenia fiszek edukacyjnych. Celem jest uproszczenie nauki metodą powtórek interwałowych (spaced repetition), głównie dla osób uczących się języków obcych.
+10xCards to aplikacja internetowa, która używa AI do szybkiego tworzenia fiszek edukacyjnych. Celem jest uproszczenie nauki dowolnego zagadnienia metodą powtórek interwałowych (spaced repetition).
 
-W wersji MVP, aplikacja pozwoli na generowanie fiszek z wklejonego tekstu, z możliwością ich akceptacji, edycji lub odrzucenia. Będzie również możliwość tworzenia własnych fiszek. Do obsługi powtórek zostanie wykorzystany gotowy algorytm FSRS (Free Spaced Repetition Scheduler).
+W wersji MVP, aplikacja pozwoli na generowanie fiszek z wklejonego tekstu, z możliwością ich akceptacji, edycji lub odrzucenia. Fiszki będą składać się z dwóch stron (pytanie i odpowiedź) i zostaną utworzone w języku, który AI wykryje we wklejonym tekście. Będzie również możliwość tworzenia własnych fiszek. Do obsługi powtórek zostanie wykorzystany gotowy algorytm FSRS (Free Spaced Repetition Scheduler).
 
 ## 2. Problem użytkownika
 Ręczne tworzenie fiszek jest czasochłonne, co zniechęca do nauki metodą spaced repetition. Użytkownicy poświęcają zbyt dużo czasu na przygotowanie materiałów zamiast na naukę. 10xCards rozwiązuje ten problem przez automatyzację tworzenia fiszek.
@@ -91,7 +91,7 @@ Funkcjonalności nieobjęte MVP:
 -   AC:
     -   Główny widok zawiera pole do wklejenia tekstu (limit 1000-10000 znaków).
     -   Kliknięcie "Generuj" rozpoczyna proces (widoczny wskaźnik ładowania).
-    -   Po zakończeniu użytkownik widzi listę propozycji.
+    -   Po zakończeniu użytkownik widzi listę propozycji (liczba propozycji proporcjonalna do wielkości wklejonego textu).
     -   W przypadku błędu wyświetlany jest komunikat.
 
 ---
