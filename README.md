@@ -1,94 +1,183 @@
-# 10x Astro Starter
+# 10xCards
 
-A modern, opinionated starter template for building fast, accessible, and AI-friendly web applications.
+An AI-powered flashcard generation application that streamlines the creation of educational flashcards using spaced repetition methodology. Transform any text into effective learning materials in seconds.
+
+## Table of Contents
+
+- [Description](#description)
+- [Tech Stack](#tech-stack)
+- [Getting Started Locally](#getting-started-locally)
+- [Available Scripts](#available-scripts)
+- [Project Scope](#project-scope)
+- [Project Status](#project-status)
+- [License](#license)
+
+## Description
+
+10xCards is a web application designed to solve the time-consuming problem of manual flashcard creation. By leveraging AI technology, it automates the generation of high-quality flashcards from any text input, allowing users to focus on learning rather than preparation.
+
+### Key Features
+
+- **AI-Powered Generation**: Paste text (1,000-10,000 characters) and let AI create flashcards automatically
+- **Smart Review System**: Uses FSRS (Free Spaced Repetition Scheduler) algorithm for optimal learning
+- **Flexible Management**: Accept, edit, or reject AI-generated suggestions
+- **Manual Creation**: Create custom flashcards manually when needed
+- **User Account Management**: Secure authentication with email/password
+- **Learning Sessions**: Dedicated interface for daily review sessions
+
+### Success Metrics
+
+- **MS-01**: 75% of AI-generated flashcards accepted by users (directly or after editing)
+- **MS-02**: 75% of all new flashcards created using AI assistance
 
 ## Tech Stack
 
-- [Astro](https://astro.build/) v5.5.5 - Modern web framework for building fast, content-focused websites
-- [React](https://react.dev/) v19.0.0 - UI library for building interactive components
-- [TypeScript](https://www.typescriptlang.org/) v5 - Type-safe JavaScript
-- [Tailwind CSS](https://tailwindcss.com/) v4.0.17 - Utility-first CSS framework
+### Frontend
+- **[Astro 5](https://astro.build/)** - Fast, content-focused web framework with minimal JavaScript
+- **[React 19](https://react.dev/)** - Interactive UI components
+- **[TypeScript 5](https://www.typescriptlang.org/)** - Static type checking and enhanced IDE support
+- **[Tailwind CSS 4](https://tailwindcss.com/)** - Utility-first CSS framework
+- **[Shadcn/ui](https://ui.shadcn.com/)** - Accessible and customizable component library
 
-## Prerequisites
+### Backend
+- **[Supabase](https://supabase.com/)** - Complete backend solution providing:
+  - PostgreSQL database
+  - Backend-as-a-Service SDK
+  - Built-in user authentication
+  - Open-source and self-hostable
 
-- Node.js v22.14.0 (as specified in `.nvmrc`)
-- npm (comes with Node.js)
+### AI Integration
+- **[OpenRouter.ai](https://openrouter.ai/)** - Unified API for multiple AI models:
+  - Access to OpenAI, Anthropic, Google, and other providers
+  - Cost optimization through model selection
+  - Built-in spending limits
 
-## Getting Started
+### CI/CD & Hosting
+- **GitHub Actions** - Automated CI/CD pipelines
+- **DigitalOcean** - Production hosting via Docker containers
 
-1. Clone the repository:
+## Getting Started Locally
 
-```bash
-git clone https://github.com/przeprogramowani/10x-astro-starter.git
-cd 10x-astro-starter
-```
+### Prerequisites
 
-2. Install dependencies:
+- **Node.js**: Version 22.14.0 (use [nvm](https://github.com/nvm-sh/nvm) to manage Node versions)
+- **npm**: Comes bundled with Node.js
 
-```bash
-npm install
-```
+### Installation
 
-3. Run the development server:
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/yourusername/10x-cards.git
+   cd 10x-cards
+   ```
 
-```bash
-npm run dev
-```
+2. **Use the correct Node.js version**
+   ```bash
+   nvm use
+   ```
 
-4. Build for production:
+3. **Install dependencies**
+   ```bash
+   npm install
+   ```
 
-```bash
-npm run build
-```
+4. **Set up environment variables**
+   
+   Create a `.env` file in the root directory with the following variables:
+   ```env
+   # Supabase Configuration
+   PUBLIC_SUPABASE_URL=your_supabase_url
+   PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+   
+   # OpenRouter.ai Configuration
+   OPENROUTER_API_KEY=your_openrouter_api_key
+   ```
+
+5. **Start the development server**
+   ```bash
+   npm run dev
+   ```
+
+6. **Open your browser**
+   
+   Navigate to `http://localhost:4321` to see the application running.
 
 ## Available Scripts
 
-- `npm run dev` - Start development server
-- `npm run build` - Build for production
-- `npm run preview` - Preview production build
-- `npm run lint` - Run ESLint
-- `npm run lint:fix` - Fix ESLint issues
+| Script | Description |
+|--------|-------------|
+| `npm run dev` | Start the development server with hot reload |
+| `npm run build` | Build the production-ready application |
+| `npm run preview` | Preview the production build locally |
+| `npm run lint` | Run ESLint to check code quality |
+| `npm run lint:fix` | Automatically fix ESLint errors |
+| `npm run format` | Format code using Prettier |
+| `npm run astro` | Run Astro CLI commands |
 
-## Project Structure
+### Development Workflow
 
-```md
-.
-├── src/
-│   ├── layouts/    # Astro layouts
-│   ├── pages/      # Astro pages
-│   │   └── api/    # API endpoints
-│   ├── components/ # UI components (Astro & React)
-│   └── assets/     # Static assets
-├── public/         # Public assets
-```
+The project includes pre-commit hooks via Husky and lint-staged to ensure code quality:
+- TypeScript/TSX/Astro files are automatically linted
+- JSON/CSS/Markdown files are automatically formatted
 
-## AI Development Support
+## Project Scope
 
-This project is configured with AI development tools to enhance the development experience, providing guidelines for:
+### MVP Features (In Scope)
 
-- Project structure
-- Coding practices
-- Frontend development
-- Styling with Tailwind
-- Accessibility best practices
-- Astro and React guidelines
+#### User Account Management
+- ✅ Registration via email/password
+- ✅ User login/logout
+- ✅ Password change functionality
+- ✅ Account deletion
 
-### Cursor IDE
+#### AI-Powered Flashcard Generation
+- ✅ Text input (1,000-10,000 characters)
+- ✅ AI analysis and flashcard proposal generation
+- ✅ Review interface with Accept/Edit/Reject options
+- ✅ Automatic language detection
+- ✅ Bulk save of accepted flashcards
 
-The project includes AI rules in `.cursor/rules/` directory that help Cursor IDE understand the project structure and provide better code suggestions.
+#### Manual Flashcard Management
+- ✅ Create flashcards manually
+- ✅ View all flashcards (paginated, 25 per page)
+- ✅ Edit existing flashcards
+- ✅ Delete flashcards with confirmation
 
-### GitHub Copilot
+#### Spaced Repetition Learning
+- ✅ FSRS algorithm integration
+- ✅ Daily review sessions
+- ✅ Flashcard rating system
+- ✅ Session summary
 
-AI instructions for GitHub Copilot are available in `.github/copilot-instructions.md`
+### Out of Scope (Post-MVP)
+- ❌ Custom spaced repetition algorithm
+- ❌ File imports (PDF, DOCX, etc.)
+- ❌ Flashcard set sharing
+- ❌ Third-party platform integrations
+- ❌ Mobile applications
+- ❌ Multiple deck support
 
-### Windsurf
+## Project Status
 
-The `.windsurfrules` file contains AI configuration for Windsurf.
+![Status](https://img.shields.io/badge/status-in%20development-yellow)
+![Version](https://img.shields.io/badge/version-0.0.1-blue)
 
-## Contributing
+**Current Phase**: MVP Development
 
-Please follow the AI guidelines and coding practices defined in the AI configuration files when contributing to this project.
+This project is actively under development. The core features outlined in the PRD are being implemented incrementally.
+
+### Roadmap
+- [ ] User authentication system
+- [ ] AI flashcard generation
+- [ ] Manual flashcard CRUD operations
+- [ ] FSRS integration
+- [ ] Learning session interface
+- [ ] Production deployment
 
 ## License
 
-MIT
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+**Made with ❤️ for learners everywhere**
