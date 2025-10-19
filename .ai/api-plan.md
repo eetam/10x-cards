@@ -15,11 +15,11 @@ _Note: User management is handled by Supabase Auth API directly_
 
 ### Generations
 
-#### Create Generation Session
+#### Generate Flashcards
 
 - **Method:** POST
 - **Path:** `/api/generations`
-- **Description:** Create a new AI generation session
+- **Description:** Create a new AI generation session and generate flashcard proposals
 - **Request Body:**
 
 ```json
@@ -33,30 +33,14 @@ _Note: User management is handled by Supabase Auth API directly_
 
 ```json
 {
-  "id": "uuid",
-  "userId": "uuid",
-  "model": "string",
-  "sourceTextHash": "string",
-  "sourceTextLength": "number",
-  "createdAt": "ISO 8601 timestamp"
-}
-```
-
-- **Success:** 201 Created
-- **Errors:** 400 Bad Request (invalid text length), 401 Unauthorized, 500 Internal Server Error
-
-#### Generate Flashcards
-
-- **Method:** POST
-- **Path:** `/api/generations/{generationId}/flashcards`
-- **Description:** Generate flashcard proposals using AI
-- **Path Parameters:**
-  - `generationId` (uuid) - ID of the generation session
-- **Response Body:**
-
-```json
-{
-  "generationId": "uuid",
+  "generation": {
+    "id": "uuid",
+    "userId": "uuid",
+    "model": "string",
+    "sourceTextHash": "string",
+    "sourceTextLength": "number",
+    "createdAt": "ISO 8601 timestamp"
+  },
   "proposals": [
     {
       "front": "string",
@@ -69,8 +53,8 @@ _Note: User management is handled by Supabase Auth API directly_
 }
 ```
 
-- **Success:** 200 OK
-- **Errors:** 404 Not Found, 401 Unauthorized, 500 Internal Server Error
+- **Success:** 201 Created
+- **Errors:** 400 Bad Request (invalid text length), 401 Unauthorized, 500 Internal Server Error
 
 #### Get Generation Details
 
