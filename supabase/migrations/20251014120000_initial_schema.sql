@@ -46,35 +46,39 @@ alter table generations enable row level security;
 
 -- Policy: Allow authenticated users to view their own generation sessions
 -- Rationale: Users need to see their generation history and metrics
+-- Note: Uses (select auth.uid()) for optimal performance - evaluated once per query
 create policy "Users can view their own generations"
   on generations
   for select
   to authenticated
-  using (auth.uid() = user_id);
+  using ((select auth.uid()) = user_id);
 
 -- Policy: Allow authenticated users to create generation sessions for themselves
 -- Rationale: Users initiate AI generation, creating new session records
+-- Note: Uses (select auth.uid()) for optimal performance - evaluated once per query
 create policy "Users can insert their own generations"
   on generations
   for insert
   to authenticated
-  with check (auth.uid() = user_id);
+  with check ((select auth.uid()) = user_id);
 
 -- Policy: Allow authenticated users to update their own generation sessions
 -- Rationale: Sessions are updated with metrics after generation completes
+-- Note: Uses (select auth.uid()) for optimal performance - evaluated once per query
 create policy "Users can update their own generations"
   on generations
   for update
   to authenticated
-  using (auth.uid() = user_id);
+  using ((select auth.uid()) = user_id);
 
 -- Policy: Allow authenticated users to delete their own generation sessions
 -- Rationale: Users may want to clean up their generation history
+-- Note: Uses (select auth.uid()) for optimal performance - evaluated once per query
 create policy "Users can delete their own generations"
   on generations
   for delete
   to authenticated
-  using (auth.uid() = user_id);
+  using ((select auth.uid()) = user_id);
 
 -- =====================================================================
 -- INDEXES: generations
@@ -152,35 +156,39 @@ alter table flashcards enable row level security;
 
 -- Policy: Allow authenticated users to view their own flashcards
 -- Rationale: Users need to see their flashcard collection and study materials
+-- Note: Uses (select auth.uid()) for optimal performance - evaluated once per query
 create policy "Users can view their own flashcards"
   on flashcards
   for select
   to authenticated
-  using (auth.uid() = user_id);
+  using ((select auth.uid()) = user_id);
 
 -- Policy: Allow authenticated users to create flashcards for themselves
 -- Rationale: Users can create manual flashcards or save AI-generated ones
+-- Note: Uses (select auth.uid()) for optimal performance - evaluated once per query
 create policy "Users can insert their own flashcards"
   on flashcards
   for insert
   to authenticated
-  with check (auth.uid() = user_id);
+  with check ((select auth.uid()) = user_id);
 
 -- Policy: Allow authenticated users to update their own flashcards
 -- Rationale: Users can edit content, update FSRS parameters during reviews
+-- Note: Uses (select auth.uid()) for optimal performance - evaluated once per query
 create policy "Users can update their own flashcards"
   on flashcards
   for update
   to authenticated
-  using (auth.uid() = user_id);
+  using ((select auth.uid()) = user_id);
 
 -- Policy: Allow authenticated users to delete their own flashcards
 -- Rationale: Users can remove flashcards from their collection
+-- Note: Uses (select auth.uid()) for optimal performance - evaluated once per query
 create policy "Users can delete their own flashcards"
   on flashcards
   for delete
   to authenticated
-  using (auth.uid() = user_id);
+  using ((select auth.uid()) = user_id);
 
 -- =====================================================================
 -- INDEXES: flashcards
@@ -241,19 +249,21 @@ alter table generation_error_logs enable row level security;
 
 -- Policy: Allow authenticated users to view their own error logs
 -- Rationale: Users can troubleshoot failed generation attempts
+-- Note: Uses (select auth.uid()) for optimal performance - evaluated once per query
 create policy "Users can view their own error logs"
   on generation_error_logs
   for select
   to authenticated
-  using (auth.uid() = user_id);
+  using ((select auth.uid()) = user_id);
 
 -- Policy: Allow authenticated users to create error logs for themselves
 -- Rationale: Application logs errors during generation failures
+-- Note: Uses (select auth.uid()) for optimal performance - evaluated once per query
 create policy "Users can insert their own error logs"
   on generation_error_logs
   for insert
   to authenticated
-  with check (auth.uid() = user_id);
+  with check ((select auth.uid()) = user_id);
 
 -- =====================================================================
 -- INDEXES: generation_error_logs
