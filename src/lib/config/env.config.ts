@@ -1,5 +1,6 @@
 /**
  * Environment configuration utilities
+ * Uses import.meta.env for Astro compatibility
  */
 export const EnvConfig = {
   /**
@@ -7,82 +8,41 @@ export const EnvConfig = {
    */
   getOpenRouterConfig() {
     return {
-      apiKey: process.env.OPENROUTER_API_KEY || "",
-      baseUrl: process.env.OPENROUTER_BASE_URL || "https://openrouter.ai/api/v1",
-      timeout: parseInt(process.env.OPENROUTER_TIMEOUT || "60000"),
-      useMock: process.env.OPENROUTER_USE_MOCK === "true",
+      apiKey: import.meta.env.OPENROUTER_API_KEY,
+      baseUrl: "https://openrouter.ai/api/v1",
+      timeout: 60000,
+      useMock: import.meta.env.OPENROUTER_USE_MOCK === "true",
     };
   },
 
   /**
-   * Get rate limiting configuration
+   * Get Supabase configuration
    */
-  getRateLimitConfig() {
+  getSupabaseConfig() {
     return {
-      generationsPerHour: parseInt(process.env.RATE_LIMIT_GENERATIONS_PER_HOUR || "10"),
-      generationsPerDay: parseInt(process.env.RATE_LIMIT_GENERATIONS_PER_DAY || "50"),
-      maxConcurrentGenerations: parseInt(process.env.RATE_LIMIT_MAX_CONCURRENT_GENERATIONS || "3"),
+      url: import.meta.env.SUPABASE_URL,
+      key: import.meta.env.SUPABASE_KEY,
     };
   },
 
   /**
-   * Get AI model configuration
+   * Get default user ID for testing
    */
-  getAIModelConfig() {
-    return {
-      defaultModel: process.env.DEFAULT_AI_MODEL || "openai/gpt-4o-mini",
-      maxSourceTextLength: parseInt(process.env.MAX_SOURCE_TEXT_LENGTH || "10000"),
-      minSourceTextLength: parseInt(process.env.MIN_SOURCE_TEXT_LENGTH || "1000"),
-    };
-  },
-
-  /**
-   * Get application configuration
-   */
-  getAppConfig() {
-    return {
-      nodeEnv: process.env.NODE_ENV || "development",
-      port: parseInt(process.env.PORT || "4321"),
-      logLevel: process.env.LOG_LEVEL || "info",
-      enableRequestLogging: process.env.ENABLE_REQUEST_LOGGING === "true",
-    };
-  },
-
-  /**
-   * Get security configuration
-   */
-  getSecurityConfig() {
-    return {
-      corsOrigin: process.env.CORS_ORIGIN || "http://localhost:4321",
-      allowedOrigins: process.env.ALLOWED_ORIGINS?.split(",") || ["http://localhost:4321"],
-    };
+  getDefaultUserId(): string | null {
+    return import.meta.env.DEFAULT_USER_ID || null;
   },
 
   /**
    * Validate required environment variables
    */
   validateRequiredEnvVars(): { valid: boolean; missing: string[] } {
-    const required = ["OPENROUTER_API_KEY", "SUPABASE_URL", "SUPABASE_ANON_KEY"];
+    const required = ["OPENROUTER_API_KEY", "SUPABASE_URL", "SUPABASE_KEY"];
 
-    const missing = required.filter((key) => !process.env[key]);
+    const missing = required.filter((key) => !import.meta.env[key]);
 
     return {
       valid: missing.length === 0,
       missing,
     };
-  },
-
-  /**
-   * Check if running in development mode
-   */
-  isDevelopment(): boolean {
-    return process.env.NODE_ENV === "development";
-  },
-
-  /**
-   * Check if running in production mode
-   */
-  isProduction(): boolean {
-    return process.env.NODE_ENV === "production";
   },
 };

@@ -18,7 +18,7 @@ export const AuthUtils = {
   /**
    * Verify JWT token with Supabase and return user
    */
-  async verifyToken(supabase: SupabaseClient, token: string): Promise<{ user: unknown; error: ApiError | null }> {
+  async verifyToken(supabase: SupabaseClient, token: string): Promise<{ user: { id: string } | null; error: ApiError | null }> {
     try {
       const {
         data: { user },

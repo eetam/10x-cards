@@ -12,11 +12,12 @@ declare global {
 }
 
 interface ImportMetaEnv {
+  // Required environment variables
   readonly SUPABASE_URL: string;
   readonly SUPABASE_KEY: string;
   readonly OPENROUTER_API_KEY: string;
   readonly OPENROUTER_USE_MOCK?: string;
-  // more env variables...
+  readonly DEFAULT_USER_ID?: string;
 }
 
 interface ImportMeta {

@@ -6,6 +6,7 @@ import { ResponseUtils } from "../../../lib/utils/response.utils";
 import { RateLimitUtils } from "../../../lib/utils/rate-limit.utils";
 import { GenerationService } from "../../../lib/services/generation.service";
 import { TextUtils } from "../../../lib/utils/text.utils";
+import { EnvConfig } from "../../../lib/config/env.config";
 
 // Disable prerendering for API routes
 export const prerender = false;
@@ -35,30 +36,45 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
     const { sourceText, model } = validationResult.data;
 
-    // Authentication check
-    const authHeader = request.headers.get("authorization");
-    const token = AuthUtils.extractBearerToken(authHeader);
+    // Get default user ID for testing
+    const defaultUserId = EnvConfig.getDefaultUserId();
+    console.log("DEFAULT_USER_ID env var:", import.meta.env.DEFAULT_USER_ID);
+    console.log("OPENROUTER_USE_MOCK env var:", import.meta.env.OPENROUTER_USE_MOCK);
 
-    if (!token) {
-      return ResponseUtils.createAuthErrorResponse("Authentication required");
-    }
+    let userId: string;
 
-    // Verify JWT token with Supabase
-    const { user, error: authError } = await AuthUtils.verifyToken(locals.supabase, token);
+    // Check if we should use default user ID for testing
+    if (defaultUserId) {
+      userId = defaultUserId;
+      console.log(`Using default user ID for testing: ${userId}`);
+    } else {
+      // Normal authentication flow
+      const authHeader = request.headers.get("authorization");
+      const token = AuthUtils.extractBearerToken(authHeader);
 
-    if (authError || !user) {
-      return ResponseUtils.createAuthErrorResponse(authError?.message || "Invalid or expired token");
-    }
+      if (!token) {
+        return ResponseUtils.createAuthErrorResponse("Authentication required");
+      }
 
-    // Check user permissions
-    const { allowed, error: permissionError } = await AuthUtils.checkGenerationPermission(locals.supabase, user.id);
+      // Verify JWT token with Supabase
+      const { user, error: authError } = await AuthUtils.verifyToken(locals.supabase, token);
 
-    if (!allowed) {
-      return ResponseUtils.createErrorResponse(
-        permissionError?.message || "Permission denied",
-        permissionError?.code || "PERMISSION_DENIED",
-        403
-      );
+      if (authError || !user) {
+        return ResponseUtils.createAuthErrorResponse(authError?.message || "Invalid or expired token");
+      }
+
+      userId = user.id;
+
+      // Check user permissions
+      const { allowed, error: permissionError } = await AuthUtils.checkGenerationPermission(locals.supabase, user.id);
+
+      if (!allowed) {
+        return ResponseUtils.createErrorResponse(
+          permissionError?.message || "Permission denied",
+          permissionError?.code || "PERMISSION_DENIED",
+          403
+        );
+      }
     }
 
     // Check rate limits
@@ -66,7 +82,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       allowed: rateLimitAllowed,
       error: rateLimitError,
       retryAfter,
-    } = await RateLimitUtils.checkGenerationRateLimit(locals.supabase, user.id);
+    } = await RateLimitUtils.checkGenerationRateLimit(locals.supabase, userId);
 
     if (!rateLimitAllowed) {
       const status = retryAfter ? 429 : 403; // 429 Too Many Requests if retryAfter is provided
@@ -86,7 +102,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     // Check concurrent generation limit
     const { allowed: concurrentAllowed, error: concurrentError } = await RateLimitUtils.checkConcurrentGenerationLimit(
       locals.supabase,
-      user.id
+      userId
     );
 
     if (!concurrentAllowed) {
@@ -104,11 +120,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     const generationService = new GenerationService(locals.supabase);
 
     // Create generation record
-    const { generationId, error: createError } = await generationService.createGeneration(
-      user.id,
-      sanitizedText,
-      model
-    );
+    const { generationId, error: createError } = await generationService.createGeneration(userId, sanitizedText, model);
 
     if (createError) {
       return ResponseUtils.createInternalErrorResponse(`Failed to create generation: ${createError.message}`);
@@ -136,7 +148,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     return ResponseUtils.createSuccessResponse(response, 201);
   } catch (error) {
     // Log error for debugging in development
-    if (process.env.NODE_ENV === "development" && error instanceof Error) {
+    if (import.meta.env.NODE_ENV === "development" && error instanceof Error) {
       console.error("Error in POST /api/generations:", error.message);
     }
     return ResponseUtils.createInternalErrorResponse();

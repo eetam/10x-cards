@@ -127,7 +127,7 @@ export class GenerationService {
       await this.supabase.from("generation_error_logs").insert(errorLog);
     } catch (error) {
       // Log error silently in production, could be replaced with proper logging service
-      if (process.env.NODE_ENV === "development") {
+      if (import.meta.env.NODE_ENV === "development") {
         console.error("Failed to log generation error:", error);
       }
     }
@@ -259,7 +259,7 @@ Generate flashcards that cover the most important concepts and test deep underst
       return response;
     } catch (error) {
       // Log error silently in production, could be replaced with proper logging service
-      if (process.env.NODE_ENV === "development") {
+      if (import.meta.env.NODE_ENV === "development") {
         console.error("OpenRouter API error:", error);
       }
 
