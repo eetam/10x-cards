@@ -146,7 +146,7 @@ export type FlashcardResponse = Pick<
 > & {
   userId: string; // mapped from user_id
   generationId: string | null; // mapped from generation_id
-  reviewHistory: any[]; // mapped from review_history (Json type)
+  reviewHistory: unknown[]; // mapped from review_history (Json type)
   createdAt: string; // mapped from created_at
   updatedAt: string; // mapped from updated_at
 };
@@ -248,7 +248,7 @@ export interface ApiError {
 export interface ValidationError {
   message: string;
   field: string;
-  value?: any;
+  value?: unknown;
 }
 
 // ============================================================================
