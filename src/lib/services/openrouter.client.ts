@@ -7,6 +7,7 @@ interface OpenRouterConfig {
   apiKey: string;
   baseUrl: string;
   timeout: number;
+  useMock: boolean;
 }
 
 /**
@@ -64,9 +65,72 @@ export class OpenRouterClient {
   }
 
   /**
+   * Generate mock flashcard response based on source text
+   */
+  private generateMockResponse(sourceText: string): string {
+    // Extract key concepts from source text (simple keyword extraction)
+    const words = sourceText
+      .toLowerCase()
+      .replace(/[^\w\s]/g, " ")
+      .split(/\s+/)
+      .filter((word) => word.length > 4)
+      .slice(0, 20); // Take first 20 meaningful words
+
+    // Generate flashcards based on extracted concepts
+    const flashcards = [];
+
+    // Generate 3-5 flashcards
+    const numCards = Math.floor(Math.random() * 3) + 3; // 3-5 cards
+
+    for (let i = 0; i < numCards; i++) {
+      const concept = words[i % words.length] || `concept${i + 1}`;
+      const capitalizedConcept = concept.charAt(0).toUpperCase() + concept.slice(1);
+
+      const frontTemplates = [
+        `What is ${capitalizedConcept}?`,
+        `Define ${capitalizedConcept}`,
+        `Explain ${capitalizedConcept}`,
+        `What does ${capitalizedConcept} mean?`,
+        `Describe ${capitalizedConcept}`,
+      ];
+
+      const backTemplates = [
+        `${capitalizedConcept} is a fundamental concept in this field that plays an important role in understanding the subject matter.`,
+        `${capitalizedConcept} refers to a key principle that helps explain various phenomena and processes.`,
+        `${capitalizedConcept} is an essential element that contributes to the overall understanding of the topic.`,
+        `${capitalizedConcept} represents a core concept that is crucial for mastering this subject area.`,
+      ];
+
+      const front = frontTemplates[i % frontTemplates.length];
+      const back = backTemplates[i % backTemplates.length];
+      const confidence = 0.7 + Math.random() * 0.3; // 0.7-1.0
+
+      flashcards.push({
+        front,
+        back,
+        confidence: Math.round(confidence * 100) / 100,
+      });
+    }
+
+    return JSON.stringify(flashcards);
+  }
+
+  /**
    * Create a chat completion request
    */
   async createChatCompletion(request: Omit<OpenRouterRequest, "model"> & { model: string }): Promise<string> {
+    // Use mock response if enabled
+    if (this.config.useMock) {
+      // Simulate API delay
+      await new Promise((resolve) => setTimeout(resolve, 1000 + Math.random() * 2000));
+
+      // Extract source text from the user message (assuming it's the last message)
+      const userMessage = request.messages.find((msg) => msg.role === "user");
+      const sourceText = userMessage?.content || "Sample text for flashcard generation";
+
+      return this.generateMockResponse(sourceText);
+    }
+
     const url = `${this.config.baseUrl}/chat/completions`;
 
     const requestBody: OpenRouterRequest = {
@@ -124,6 +188,12 @@ export class OpenRouterClient {
    * Test API connection
    */
   async testConnection(): Promise<boolean> {
+    if (this.config.useMock) {
+      // Simulate connection test delay
+      await new Promise((resolve) => setTimeout(resolve, 500));
+      return true; // Mock always succeeds
+    }
+
     try {
       await this.createChatCompletion({
         model: "openai/gpt-4o-mini",
@@ -149,8 +219,9 @@ export class OpenRouterClient {
 export function createOpenRouterClient(): OpenRouterClient {
   const config = EnvConfig.getOpenRouterConfig();
 
-  if (!config.apiKey) {
-    throw new Error("OPENROUTER_API_KEY environment variable is required");
+  // Only require API key if not using mock
+  if (!config.useMock && !config.apiKey) {
+    throw new Error("OPENROUTER_API_KEY environment variable is required when not using mock mode");
   }
 
   return new OpenRouterClient(config);
