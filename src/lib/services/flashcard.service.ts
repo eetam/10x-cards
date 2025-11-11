@@ -92,6 +92,42 @@ export class FlashcardService {
   }
 
   /**
+   * Get a single flashcard by ID for the user
+   * RLS automatically filters by user_id
+   * @param flashcardId - The flashcard ID
+   * @param userId - The user ID
+   * @returns Object with flashcard and error if any
+   */
+  async getFlashcardById(
+    flashcardId: string,
+    userId: string
+  ): Promise<{ flashcard: Flashcard | null; error: Error | null }> {
+    try {
+      const { data, error } = await this.supabase
+        .from("flashcards")
+        .select("*")
+        .eq("id", flashcardId)
+        .eq("user_id", userId)
+        .single();
+
+      if (error) {
+        // If no rows found, return null flashcard (not an error)
+        if (error.code === "PGRST116") {
+          return { flashcard: null, error: null };
+        }
+        return { flashcard: null, error: new Error(`Database error: ${error.message}`) };
+      }
+
+      return { flashcard: data as Flashcard, error: null };
+    } catch (error) {
+      return {
+        flashcard: null,
+        error: error instanceof Error ? error : new Error("Unknown error"),
+      };
+    }
+  }
+
+  /**
    * List flashcards for a user with pagination, sorting, and filtering
    * RLS automatically filters by user_id
    * @param userId - The user ID

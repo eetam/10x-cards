@@ -372,5 +372,98 @@ describe("FlashcardService", () => {
       expect(result.error).toBeInstanceOf(Error);
     });
   });
-});
 
+  describe("getFlashcardById", () => {
+    it("should return flashcard when found", async () => {
+      const mockFlashcard: Flashcard = {
+        id: "card-123",
+        user_id: "user-123",
+        generation_id: null,
+        front: "Question",
+        back: "Answer",
+        source: "manual",
+        state: 0,
+        due: "2024-01-01T00:00:00Z",
+        stability: 0,
+        difficulty: 0,
+        lapses: 0,
+        review_history: [],
+        created_at: "2024-01-01T00:00:00Z",
+        updated_at: "2024-01-01T00:00:00Z",
+      };
+
+      const mockQueryBuilder = {
+        select: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockReturnThis(),
+        single: vi.fn().mockResolvedValue({
+          data: mockFlashcard,
+          error: null,
+        }),
+      };
+
+      vi.mocked(mockSupabase.from).mockReturnValue(mockQueryBuilder as unknown as ReturnType<SupabaseClient["from"]>);
+
+      const result = await flashcardService.getFlashcardById("card-123", "user-123");
+
+      expect(result.flashcard).toEqual(mockFlashcard);
+      expect(result.error).toBeNull();
+      expect(mockSupabase.from).toHaveBeenCalledWith("flashcards");
+      expect(mockQueryBuilder.select).toHaveBeenCalledWith("*");
+      expect(mockQueryBuilder.eq).toHaveBeenCalledWith("id", "card-123");
+      expect(mockQueryBuilder.eq).toHaveBeenCalledWith("user_id", "user-123");
+      expect(mockQueryBuilder.single).toHaveBeenCalled();
+    });
+
+    it("should return null flashcard when not found (PGRST116)", async () => {
+      const mockQueryBuilder = {
+        select: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockReturnThis(),
+        single: vi.fn().mockResolvedValue({
+          data: null,
+          error: { code: "PGRST116", message: "No rows found" },
+        }),
+      };
+
+      vi.mocked(mockSupabase.from).mockReturnValue(mockQueryBuilder as unknown as ReturnType<SupabaseClient["from"]>);
+
+      const result = await flashcardService.getFlashcardById("non-existent", "user-123");
+
+      expect(result.flashcard).toBeNull();
+      expect(result.error).toBeNull();
+    });
+
+    it("should return error for database errors other than PGRST116", async () => {
+      const mockQueryBuilder = {
+        select: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockReturnThis(),
+        single: vi.fn().mockResolvedValue({
+          data: null,
+          error: { code: "PGRST001", message: "Database connection error" },
+        }),
+      };
+
+      vi.mocked(mockSupabase.from).mockReturnValue(mockQueryBuilder as unknown as ReturnType<SupabaseClient["from"]>);
+
+      const result = await flashcardService.getFlashcardById("card-123", "user-123");
+
+      expect(result.flashcard).toBeNull();
+      expect(result.error).toBeInstanceOf(Error);
+      expect(result.error?.message).toContain("Database connection error");
+    });
+
+    it("should handle unexpected errors", async () => {
+      const mockQueryBuilder = {
+        select: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockReturnThis(),
+        single: vi.fn().mockRejectedValue(new Error("Unexpected error")),
+      };
+
+      vi.mocked(mockSupabase.from).mockReturnValue(mockQueryBuilder as unknown as ReturnType<SupabaseClient["from"]>);
+
+      const result = await flashcardService.getFlashcardById("card-123", "user-123");
+
+      expect(result.flashcard).toBeNull();
+      expect(result.error).toBeInstanceOf(Error);
+    });
+  });
+});
