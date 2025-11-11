@@ -84,9 +84,7 @@ export class GenerationService {
     try {
       const { data, error } = await this.supabase
         .from("generations")
-        .select(
-          "id, user_id, model, generated_count, accepted_unedited_count, accepted_edited_count, source_text_length, generation_duration, created_at"
-        )
+        .select("*")
         .eq("id", generationId)
         .eq("user_id", userId)
         .single();
@@ -99,10 +97,72 @@ export class GenerationService {
         return { generation: null, error: new Error(`Database error: ${error.message}`) };
       }
 
-      return { generation: data, error: null };
+      return { generation: data as Generation, error: null };
     } catch (error) {
       return {
         generation: null,
+        error: error instanceof Error ? error : new Error("Unknown error"),
+      };
+    }
+  }
+
+  /**
+   * List generations for a user with pagination and sorting
+   * RLS automatically filters by user_id
+   */
+  async listGenerations(
+    userId: string,
+    options: {
+      page: number;
+      limit: number;
+      sort: "createdAt" | "model";
+      order: "asc" | "desc";
+    }
+  ): Promise<{
+    data: Pick<
+      Generation,
+      "id" | "model" | "generated_count" | "accepted_unedited_count" | "accepted_edited_count" | "created_at"
+    >[];
+    total: number;
+    error: Error | null;
+  }> {
+    try {
+      // Map sort field from API format (camelCase) to database format (snake_case)
+      const sortFieldMap: Record<"createdAt" | "model", string> = {
+        createdAt: "created_at",
+        model: "model",
+      };
+      const sortField = sortFieldMap[options.sort];
+
+      // Build query with count
+      const query = this.supabase
+        .from("generations")
+        .select("id,model,generated_count,accepted_unedited_count,accepted_edited_count,created_at", {
+          count: "exact",
+        })
+        .eq("user_id", userId)
+        .order(sortField, { ascending: options.order === "asc" })
+        .range((options.page - 1) * options.limit, options.page * options.limit - 1);
+
+      const { data, count, error } = await query;
+
+      if (error) {
+        return {
+          data: [],
+          total: 0,
+          error: new Error(`Database error: ${error.message}`),
+        };
+      }
+
+      return {
+        data: data || [],
+        total: count || 0,
+        error: null,
+      };
+    } catch (error) {
+      return {
+        data: [],
+        total: 0,
         error: error instanceof Error ? error : new Error("Unknown error"),
       };
     }

@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect } from "vitest";
 import { OpenRouterClient } from "../openrouter.client";
 
 describe("OpenRouterClient Mock Mode", () => {
@@ -40,7 +40,7 @@ describe("OpenRouterClient Mock Mode", () => {
       expect(flashcards.length).toBeLessThanOrEqual(5);
 
       // Verify each flashcard structure
-      flashcards.forEach((card: any) => {
+      flashcards.forEach((card: { front: string; back: string; confidence: number }) => {
         expect(card).toHaveProperty("front");
         expect(card).toHaveProperty("back");
         expect(card).toHaveProperty("confidence");

@@ -1,6 +1,6 @@
 import type { APIRoute } from "astro";
 import { z } from "zod";
-import type { GenerateFlashcardsResponse } from "../../../types";
+import type { GenerateFlashcardsResponse, ListGenerationsResponse, PaginationInfo } from "../../../types";
 import { AuthUtils } from "../../../lib/utils/auth.utils";
 import { ResponseUtils } from "../../../lib/utils/response.utils";
 import { RateLimitUtils } from "../../../lib/utils/rate-limit.utils";
@@ -19,6 +19,14 @@ const CreateGenerationSchema = z.object({
     .max(10000, "Source text must not exceed 10000 characters")
     .trim(),
   model: z.string().optional().default("openai/gpt-4o-mini"), // Default model
+});
+
+// Validation schema for query parameters
+const ListGenerationsQuerySchema = z.object({
+  page: z.coerce.number().int().min(1).optional().default(1),
+  limit: z.coerce.number().int().min(1).max(100).optional().default(25),
+  sort: z.enum(["createdAt", "model"]).optional().default("createdAt"),
+  order: z.enum(["asc", "desc"]).optional().default("desc"),
 });
 
 export const POST: APIRoute = async ({ request, locals }) => {
@@ -150,6 +158,115 @@ export const POST: APIRoute = async ({ request, locals }) => {
     // Log error for debugging in development
     if (import.meta.env.NODE_ENV === "development" && error instanceof Error) {
       console.error("Error in POST /api/generations:", error.message);
+    }
+    return ResponseUtils.createInternalErrorResponse();
+  }
+};
+
+/**
+ * GET /api/generations
+ *
+ * Retrieves a list of flashcard generation sessions for the authenticated user.
+ * Supports pagination, sorting, and filtering.
+ *
+ * @param request - The incoming HTTP request
+ * @param locals - Astro locals containing Supabase client
+ * @returns Response with list of generations and pagination info
+ */
+export const GET: APIRoute = async ({ request, locals }) => {
+  try {
+    // Step 1: Authentication validation
+    const defaultUserId = EnvConfig.getDefaultUserId();
+
+    let userId: string;
+
+    // Check if we should use default user ID for testing
+    if (defaultUserId) {
+      userId = defaultUserId;
+      if (import.meta.env.NODE_ENV === "development") {
+        console.log(`Using default user ID for testing: ${userId}`);
+      }
+    } else {
+      // Normal authentication flow
+      const authHeader = request.headers.get("authorization");
+      const token = AuthUtils.extractBearerToken(authHeader);
+
+      if (!token) {
+        return ResponseUtils.createAuthErrorResponse("Authentication required");
+      }
+
+      // Verify JWT token with Supabase
+      const { user, error: authError } = await AuthUtils.verifyToken(locals.supabase, token);
+
+      if (authError || !user) {
+        return ResponseUtils.createAuthErrorResponse(authError?.message || "Invalid or expired token");
+      }
+
+      userId = user.id;
+    }
+
+    // Step 2: Validate query parameters
+    const url = new URL(request.url);
+    const queryParams = Object.fromEntries(url.searchParams.entries());
+
+    const validationResult = ListGenerationsQuerySchema.safeParse(queryParams);
+
+    if (!validationResult.success) {
+      const firstError = validationResult.error.errors[0];
+      return ResponseUtils.createValidationErrorResponse(
+        firstError?.message || "Invalid query parameters",
+        firstError?.path.join(".") || "unknown"
+      );
+    }
+
+    const { page, limit, sort, order } = validationResult.data;
+
+    // Step 3: Fetch generations from database
+    const generationService = new GenerationService(locals.supabase);
+    const {
+      data,
+      total,
+      error: fetchError,
+    } = await generationService.listGenerations(userId, {
+      page,
+      limit,
+      sort,
+      order,
+    });
+
+    if (fetchError) {
+      return ResponseUtils.createInternalErrorResponse(`Failed to fetch generations: ${fetchError.message}`);
+    }
+
+    // Step 4: Calculate pagination metadata
+    const totalPages = Math.ceil(total / limit);
+    const pagination: PaginationInfo = {
+      page,
+      limit,
+      total,
+      totalPages,
+    };
+
+    // Step 5: Prepare response
+    // Note: ListGenerationsResponse uses Pick from Generation, so fields are in snake_case
+    const response: ListGenerationsResponse = {
+      data: data.map((generation) => ({
+        id: generation.id,
+        model: generation.model,
+        generated_count: generation.generated_count,
+        accepted_unedited_count: generation.accepted_unedited_count,
+        accepted_edited_count: generation.accepted_edited_count,
+        created_at: generation.created_at,
+      })),
+      pagination,
+    };
+
+    // Step 6: Return success response
+    return ResponseUtils.createSuccessResponse(response, 200);
+  } catch (error) {
+    // Log error for debugging in development
+    if (import.meta.env.NODE_ENV === "development" && error instanceof Error) {
+      console.error("Error in GET /api/generations:", error.message);
     }
     return ResponseUtils.createInternalErrorResponse();
   }
