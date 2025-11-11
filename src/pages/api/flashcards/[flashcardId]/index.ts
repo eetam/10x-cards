@@ -39,6 +39,7 @@ export const GET: APIRoute = async ({ request, locals, params }) => {
     if (defaultUserId) {
       userId = defaultUserId;
       if (import.meta.env.NODE_ENV === "development") {
+        // eslint-disable-next-line no-console
         console.log(`Using default user ID for testing: ${userId}`);
       }
     } else {
@@ -121,7 +122,9 @@ export const GET: APIRoute = async ({ request, locals, params }) => {
   } catch (error) {
     // Log error for debugging in development
     if (import.meta.env.NODE_ENV === "development" && error instanceof Error) {
+      // eslint-disable-next-line no-console
       console.error("Error in GET /api/flashcards/[flashcardId]:", error.message);
+      // eslint-disable-next-line no-console
       console.error(error.stack);
     }
     return ResponseUtils.createInternalErrorResponse();
@@ -150,6 +153,7 @@ export const PUT: APIRoute = async ({ request, locals, params }) => {
     if (defaultUserId) {
       userId = defaultUserId;
       if (import.meta.env.NODE_ENV === "development") {
+        // eslint-disable-next-line no-console
         console.log(`Using default user ID for testing: ${userId}`);
       }
     } else {
@@ -287,7 +291,105 @@ export const PUT: APIRoute = async ({ request, locals, params }) => {
   } catch (error) {
     // Log error for debugging in development
     if (import.meta.env.NODE_ENV === "development" && error instanceof Error) {
+      // eslint-disable-next-line no-console
       console.error("Error in PUT /api/flashcards/[flashcardId]:", error.message);
+      // eslint-disable-next-line no-console
+      console.error(error.stack);
+    }
+    return ResponseUtils.createInternalErrorResponse();
+  }
+};
+
+/**
+ * DELETE /api/flashcards/{flashcardId}
+ *
+ * Deletes a flashcard by its ID.
+ * Only the owner of the flashcard can delete it (enforced by RLS).
+ *
+ * @param request - The incoming HTTP request
+ * @param locals - Astro locals containing Supabase client
+ * @param params - Route parameters containing flashcardId
+ * @returns Response with success message or error
+ */
+export const DELETE: APIRoute = async ({ request, locals, params }) => {
+  try {
+    // Step 1: Authentication validation
+    const defaultUserId = EnvConfig.getDefaultUserId();
+
+    let userId: string;
+
+    if (defaultUserId) {
+      userId = defaultUserId;
+      if (import.meta.env.NODE_ENV === "development") {
+        // eslint-disable-next-line no-console
+        console.log(`Using default user ID for testing: ${userId}`);
+      }
+    } else {
+      // Normal authentication flow
+      const authHeader = request.headers.get("authorization");
+      const token = AuthUtils.extractBearerToken(authHeader);
+
+      if (!token) {
+        return ResponseUtils.createAuthErrorResponse("Authentication required");
+      }
+
+      // Verify JWT token with Supabase
+      const { user, error: authError } = await AuthUtils.verifyToken(locals.supabase, token);
+
+      if (authError || !user) {
+        return ResponseUtils.createAuthErrorResponse(authError?.message || "Invalid or expired token");
+      }
+
+      userId = user.id;
+    }
+
+    // Step 2: Validate path parameter
+    const flashcardId = params.flashcardId;
+
+    if (!flashcardId) {
+      return ResponseUtils.createValidationErrorResponse("Flashcard ID is required", "flashcardId");
+    }
+
+    const validationResult = FlashcardIdSchema.safeParse(flashcardId);
+
+    if (!validationResult.success) {
+      return ResponseUtils.createValidationErrorResponse("Invalid flashcard ID format", "flashcardId");
+    }
+
+    const validatedFlashcardId = validationResult.data;
+
+    // Step 3: Verify flashcard exists and belongs to user
+    const flashcardService = new FlashcardService(locals.supabase);
+    const { flashcard, error: fetchError } = await flashcardService.getFlashcardById(validatedFlashcardId, userId);
+
+    if (fetchError) {
+      return ResponseUtils.createInternalErrorResponse(`Failed to fetch flashcard: ${fetchError.message}`);
+    }
+
+    if (!flashcard) {
+      return ResponseUtils.createErrorResponse("Flashcard not found", "NOT_FOUND", 404);
+    }
+
+    // Step 4: Delete flashcard
+    const { success, error: deleteError } = await flashcardService.deleteFlashcard(validatedFlashcardId, userId);
+
+    if (deleteError) {
+      return ResponseUtils.createInternalErrorResponse(`Failed to delete flashcard: ${deleteError.message}`);
+    }
+
+    if (!success) {
+      // This should not happen if we verified existence, but handle gracefully
+      return ResponseUtils.createErrorResponse("Flashcard not found", "NOT_FOUND", 404);
+    }
+
+    // Step 5: Return success response
+    return ResponseUtils.createSuccessResponse({ message: "Flashcard deleted successfully" }, 200);
+  } catch (error) {
+    // Log error for debugging in development
+    if (import.meta.env.NODE_ENV === "development" && error instanceof Error) {
+      // eslint-disable-next-line no-console
+      console.error("Error in DELETE /api/flashcards/[flashcardId]:", error.message);
+      // eslint-disable-next-line no-console
       console.error(error.stack);
     }
     return ResponseUtils.createInternalErrorResponse();

@@ -276,4 +276,32 @@ export class FlashcardService {
       };
     }
   }
+
+  /**
+   * Delete a flashcard by ID for the user
+   * RLS automatically filters by user_id
+   * @param flashcardId - The flashcard ID
+   * @param userId - The user ID
+   * @returns Object with success flag and error if any
+   */
+  async deleteFlashcard(flashcardId: string, userId: string): Promise<{ success: boolean; error: Error | null }> {
+    try {
+      const { error } = await this.supabase.from("flashcards").delete().eq("id", flashcardId).eq("user_id", userId);
+
+      if (error) {
+        // If no rows found (PGRST116), that's fine - RLS already ensured security
+        if (error.code === "PGRST116") {
+          return { success: false, error: null }; // Treat as not found
+        }
+        return { success: false, error: new Error(`Database error: ${error.message}`) };
+      }
+
+      return { success: true, error: null };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error : new Error("Unknown error"),
+      };
+    }
+  }
 }
