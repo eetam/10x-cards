@@ -63,7 +63,7 @@ export const GET: APIRoute = async ({ request, locals }) => {
       },
       isAuthenticated: true,
     });
-  } catch (error) {
+  } catch {
     // On error, assume not authenticated
     return ResponseUtils.createSuccessResponse({
       user: null,
@@ -71,4 +71,3 @@ export const GET: APIRoute = async ({ request, locals }) => {
     });
   }
 };
-

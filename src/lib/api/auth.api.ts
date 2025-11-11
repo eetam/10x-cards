@@ -16,4 +16,3 @@ export interface AuthSessionResponse {
 export async function getAuthSession(): Promise<AuthSessionResponse> {
   return apiClient.get<AuthSessionResponse>(API_ENDPOINTS.authSession);
 }
-

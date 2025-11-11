@@ -46,7 +46,7 @@ export const useAuthStore = create<AuthState>((set) => ({
       // First, try to get session from API endpoint (works with DEFAULT_USER_ID on server)
       try {
         const sessionData = await getAuthSession();
-        
+
         if (sessionData.isAuthenticated && sessionData.user) {
           // Create user object from API response
           const user: User = {
