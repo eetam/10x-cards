@@ -1,5 +1,12 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import type { Flashcard, FlashcardInsert, CreateFlashcardCommand, FlashcardSource, FSRSState } from "../../types";
+import type {
+  Flashcard,
+  FlashcardInsert,
+  FlashcardUpdate,
+  CreateFlashcardCommand,
+  FlashcardSource,
+  FSRSState,
+} from "../../types";
 
 /**
  * Service for handling flashcard operations
@@ -12,18 +19,29 @@ export class FlashcardService {
    * @param userId - The user ID
    * @param front - The front side of the flashcard
    * @param back - The back side of the flashcard
+   * @param excludeFlashcardId - Optional flashcard ID to exclude from duplicate check (for updates)
    * @returns Object with exists flag and error if any
    */
-  async checkDuplicate(userId: string, front: string, back: string): Promise<{ exists: boolean; error: Error | null }> {
+  async checkDuplicate(
+    userId: string,
+    front: string,
+    back: string,
+    excludeFlashcardId?: string
+  ): Promise<{ exists: boolean; error: Error | null }> {
     try {
-      const { data, error } = await this.supabase
+      let query = this.supabase
         .from("flashcards")
         .select("id")
         .eq("user_id", userId)
         .eq("front", front)
-        .eq("back", back)
-        .limit(1)
-        .maybeSingle();
+        .eq("back", back);
+
+      // Exclude the current flashcard if provided (for update operations)
+      if (excludeFlashcardId) {
+        query = query.neq("id", excludeFlashcardId);
+      }
+
+      const { data, error } = await query.limit(1).maybeSingle();
 
       if (error) {
         // If no rows found (PGRST116), that's fine - no duplicate
@@ -119,6 +137,61 @@ export class FlashcardService {
       }
 
       return { flashcard: data as Flashcard, error: null };
+    } catch (error) {
+      return {
+        flashcard: null,
+        error: error instanceof Error ? error : new Error("Unknown error"),
+      };
+    }
+  }
+
+  /**
+   * Update a flashcard's content (front and back) for the user
+   * RLS automatically filters by user_id
+   * @param flashcardId - The flashcard ID
+   * @param userId - The user ID
+   * @param data - The update data (front and back)
+   * @returns Object with updated flashcard and error if any
+   */
+  async updateFlashcard(
+    flashcardId: string,
+    userId: string,
+    data: { front: string; back: string }
+  ): Promise<{ flashcard: Flashcard | null; error: Error | null }> {
+    try {
+      // Prepare data for update
+      const updateData: FlashcardUpdate = {
+        front: data.front.trim(),
+        back: data.back.trim(),
+        updated_at: new Date().toISOString(), // Current timestamp
+      };
+
+      const { data: updatedFlashcard, error } = await this.supabase
+        .from("flashcards")
+        .update(updateData)
+        .eq("id", flashcardId)
+        .eq("user_id", userId)
+        .select()
+        .single();
+
+      if (error) {
+        // If no rows found (PGRST116), flashcard doesn't exist or doesn't belong to user
+        if (error.code === "PGRST116") {
+          return { flashcard: null, error: null };
+        }
+
+        // Check for UNIQUE constraint violation (duplicate)
+        if (error.code === "23505") {
+          return {
+            flashcard: null,
+            error: new Error("Flashcard with this content already exists"),
+          };
+        }
+
+        return { flashcard: null, error: new Error(`Database error: ${error.message}`) };
+      }
+
+      return { flashcard: updatedFlashcard as Flashcard, error: null };
     } catch (error) {
       return {
         flashcard: null,
