@@ -163,7 +163,21 @@ export const POST: APIRoute = async ({ request, locals }) => {
       return ResponseUtils.createInternalErrorResponse("Failed to create flashcard: no data returned");
     }
 
-    // Step 6: Transform response (snake_case to camelCase)
+    // Step 6: Update generation metrics if flashcard is from AI generation
+    if (generationId && (source === "ai-full" || source === "ai-edited")) {
+      const generationService = new GenerationService(locals.supabase);
+      const { error: metricsError } = await generationService.incrementAcceptedCount(generationId, source);
+
+      // Log error but don't fail the request - metrics update is non-critical
+      if (metricsError) {
+        if (import.meta.env.NODE_ENV === "development") {
+          console.error("Failed to update generation metrics:", metricsError.message);
+        }
+        // Continue with response - flashcard was created successfully
+      }
+    }
+
+    // Step 7: Transform response (snake_case to camelCase)
     // CreateFlashcardResponse contains both snake_case (from Pick) and camelCase (from & {})
     const response: CreateFlashcardResponse = {
       id: flashcard.id,
@@ -185,7 +199,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       updatedAt: flashcard.updated_at,
     };
 
-    // Step 7: Return success response
+    // Step 8: Return success response
     return ResponseUtils.createSuccessResponse(response, 201);
   } catch (error) {
     // Log error for debugging in development

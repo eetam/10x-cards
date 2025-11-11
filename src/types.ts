@@ -280,6 +280,7 @@ export interface GenerateFlashcardsCommand {
   generationId: string;
   sourceText: string;
   model: string;
+  userId: string;
 }
 
 export type CreateFlashcardCommand = CreateFlashcardRequest;

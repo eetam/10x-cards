@@ -139,6 +139,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       generationId,
       sourceText: sanitizedText,
       model,
+      userId,
     });
 
     if (generationError) {

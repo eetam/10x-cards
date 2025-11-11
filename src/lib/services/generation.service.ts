@@ -237,6 +237,56 @@ export class GenerationService {
   }
 
   /**
+   * Increment accepted flashcard count for a generation
+   * Updates either accepted_unedited_count or accepted_edited_count based on source
+   */
+  async incrementAcceptedCount(
+    generationId: string,
+    source: "ai-full" | "ai-edited"
+  ): Promise<{ error: Error | null }> {
+    try {
+      // Determine which field to increment
+      const fieldToUpdate = source === "ai-full" ? "accepted_unedited_count" : "accepted_edited_count";
+
+      // Fetch current value, increment, and update
+      // Select both fields to avoid TypeScript union type issues
+      const { data: generation, error: fetchError } = await this.supabase
+        .from("generations")
+        .select("accepted_unedited_count, accepted_edited_count")
+        .eq("id", generationId)
+        .single();
+
+      if (fetchError) {
+        return { error: new Error(`Database error: ${fetchError.message}`) };
+      }
+
+      // Type-safe access to the field value
+      const currentCount =
+        fieldToUpdate === "accepted_unedited_count"
+          ? (generation?.accepted_unedited_count ?? 0)
+          : (generation?.accepted_edited_count ?? 0);
+      const newCount = currentCount + 1;
+
+      const updateData =
+        fieldToUpdate === "accepted_unedited_count"
+          ? { accepted_unedited_count: newCount }
+          : { accepted_edited_count: newCount };
+
+      const { error: updateError } = await this.supabase.from("generations").update(updateData).eq("id", generationId);
+
+      if (updateError) {
+        return { error: new Error(`Database error: ${updateError.message}`) };
+      }
+
+      return { error: null };
+    } catch (error) {
+      return {
+        error: error instanceof Error ? error : new Error("Unknown error"),
+      };
+    }
+  }
+
+  /**
    * Log generation error
    */
   async logGenerationError(
@@ -317,7 +367,7 @@ export class GenerationService {
     } catch (error) {
       // Log error
       await this.logGenerationError(
-        "", // userId will be filled by caller
+        command.userId,
         command.model,
         command.sourceText,
         "GENERATION_ERROR",
