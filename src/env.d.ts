@@ -12,12 +12,16 @@ declare global {
 }
 
 interface ImportMetaEnv {
-  // Required environment variables
-  readonly SUPABASE_URL: string;
-  readonly SUPABASE_KEY: string;
+  // Public variables (available on client-side) - optional
+  // Used for JWT token retrieval and Supabase Auth features
+  readonly PUBLIC_SUPABASE_URL?: string;
+  readonly PUBLIC_SUPABASE_KEY?: string;
+  // Server-side variables (for API routes and middleware)
+  readonly SUPABASE_URL?: string;
+  readonly SUPABASE_KEY?: string;
   readonly OPENROUTER_API_KEY: string;
   readonly OPENROUTER_USE_MOCK?: string;
-  readonly DEFAULT_USER_ID?: string;
+  readonly DEFAULT_USER_ID?: string; // Server-side only, used by API endpoints
 }
 
 interface ImportMeta {
