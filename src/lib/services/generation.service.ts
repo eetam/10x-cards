@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type {
+  Generation,
   GenerationInsert,
   GenerationErrorLogInsert,
   FlashcardProposal,
@@ -70,6 +71,80 @@ export class GenerationService {
         error: error instanceof Error ? error : new Error("Unknown error"),
       };
     }
+  }
+
+  /**
+   * Get generation by ID
+   * RLS automatically filters by user_id, so we only need to check by id
+   */
+  async getGenerationById(
+    generationId: string,
+    userId: string
+  ): Promise<{ generation: Generation | null; error: Error | null }> {
+    try {
+      const { data, error } = await this.supabase
+        .from("generations")
+        .select(
+          "id, user_id, model, generated_count, accepted_unedited_count, accepted_edited_count, source_text_length, generation_duration, created_at"
+        )
+        .eq("id", generationId)
+        .eq("user_id", userId)
+        .single();
+
+      if (error) {
+        // If no rows found, return null generation (not an error)
+        if (error.code === "PGRST116") {
+          return { generation: null, error: null };
+        }
+        return { generation: null, error: new Error(`Database error: ${error.message}`) };
+      }
+
+      return { generation: data, error: null };
+    } catch (error) {
+      return {
+        generation: null,
+        error: error instanceof Error ? error : new Error("Unknown error"),
+      };
+    }
+  }
+
+  /**
+   * Convert PostgreSQL interval to ISO 8601 duration format
+   * PostgreSQL interval format: "HH:MM:SS.microseconds" or "HH:MM:SS"
+   * ISO 8601 duration format: "PT{n}S" where n is total seconds
+   */
+  convertIntervalToISO8601(interval: unknown | null): string | null {
+    if (!interval) {
+      return null;
+    }
+
+    // If already in ISO 8601 format, return as is
+    if (typeof interval === "string" && interval.startsWith("PT")) {
+      return interval;
+    }
+
+    // Parse PostgreSQL interval format: "HH:MM:SS.microseconds" or "HH:MM:SS"
+    if (typeof interval !== "string") {
+      return null;
+    }
+
+    const parts = interval.split(":");
+    if (parts.length !== 3) {
+      return null;
+    }
+
+    const hours = parseInt(parts[0], 10);
+    const minutes = parseInt(parts[1], 10);
+    const seconds = parseFloat(parts[2]);
+
+    if (isNaN(hours) || isNaN(minutes) || isNaN(seconds)) {
+      return null;
+    }
+
+    const totalSeconds = hours * 3600 + minutes * 60 + seconds;
+
+    // Format as ISO 8601 duration: PT{n}S
+    return `PT${totalSeconds}S`;
   }
 
   /**
