@@ -1,5 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import type { Flashcard, FlashcardInsert, CreateFlashcardCommand } from "../../types";
+import type { Flashcard, FlashcardInsert, CreateFlashcardCommand, FlashcardSource, FSRSState } from "../../types";
 
 /**
  * Service for handling flashcard operations
@@ -86,6 +86,83 @@ export class FlashcardService {
     } catch (error) {
       return {
         flashcard: null,
+        error: error instanceof Error ? error : new Error("Unknown error"),
+      };
+    }
+  }
+
+  /**
+   * List flashcards for a user with pagination, sorting, and filtering
+   * RLS automatically filters by user_id
+   * @param userId - The user ID
+   * @param options - Query options (pagination, sorting, filtering)
+   * @returns Object with flashcard data, total count, and error if any
+   */
+  async listFlashcards(
+    userId: string,
+    options: {
+      page: number;
+      limit: number;
+      sort: "createdAt" | "updatedAt" | "due";
+      order: "asc" | "desc";
+      source?: FlashcardSource;
+      state?: FSRSState;
+    }
+  ): Promise<{
+    data: Pick<Flashcard, "id" | "front" | "back" | "source" | "state" | "due" | "created_at" | "updated_at">[];
+    total: number;
+    error: Error | null;
+  }> {
+    try {
+      // Map sort field from API format (camelCase) to database format (snake_case)
+      const sortFieldMap: Record<"createdAt" | "updatedAt" | "due", string> = {
+        createdAt: "created_at",
+        updatedAt: "updated_at",
+        due: "due",
+      };
+      const sortField = sortFieldMap[options.sort];
+
+      // Build query with count
+      let query = this.supabase
+        .from("flashcards")
+        .select("id,front,back,source,state,due,created_at,updated_at", {
+          count: "exact",
+        })
+        .eq("user_id", userId);
+
+      // Apply optional filters
+      if (options.source) {
+        query = query.eq("source", options.source);
+      }
+
+      if (options.state !== undefined) {
+        query = query.eq("state", options.state);
+      }
+
+      // Apply sorting and pagination
+      query = query
+        .order(sortField, { ascending: options.order === "asc" })
+        .range((options.page - 1) * options.limit, options.page * options.limit - 1);
+
+      const { data, count, error } = await query;
+
+      if (error) {
+        return {
+          data: [],
+          total: 0,
+          error: new Error(`Database error: ${error.message}`),
+        };
+      }
+
+      return {
+        data: data || [],
+        total: count || 0,
+        error: null,
+      };
+    } catch (error) {
+      return {
+        data: [],
+        total: 0,
         error: error instanceof Error ? error : new Error("Unknown error"),
       };
     }
