@@ -1,6 +1,6 @@
 import type { MiddlewareResponseHandler } from "astro";
 
-import { supabaseClient } from "../db/supabase.client.ts";
+import { getSupabaseClient, supabaseClient } from "../db/supabase.client.ts";
 import { AuthUtils } from "../lib/utils/auth.utils";
 import { EnvConfig } from "../lib/config/env.config";
 
@@ -34,8 +34,19 @@ function getTokenFromRequest(request: Request): string | null {
 }
 
 export const onRequest: MiddlewareResponseHandler = async (context, next) => {
-  // Set Supabase client in locals
-  context.locals.supabase = supabaseClient;
+  // Set Supabase client in locals (use getSupabaseClient to ensure it's initialized)
+  try {
+    context.locals.supabase = getSupabaseClient();
+  } catch (error) {
+    // If Supabase client is not available, log error but don't block the request
+    // This allows the app to load even if Supabase is not configured
+    if (import.meta.env.DEV) {
+      console.error("Failed to initialize Supabase client:", error);
+    }
+    // Create a dummy client to prevent errors in API routes
+    // API routes should handle missing Supabase client gracefully
+    context.locals.supabase = null as any;
+  }
 
   const url = new URL(context.request.url);
 
@@ -61,11 +72,21 @@ export const onRequest: MiddlewareResponseHandler = async (context, next) => {
       });
     }
 
-    // Verify token
-    const { user, error } = await AuthUtils.verifyToken(supabaseClient, token);
+    // Verify token (only if Supabase client is available)
+    if (supabaseClient) {
+      const { user, error } = await AuthUtils.verifyToken(supabaseClient, token);
 
-    if (error || !user) {
-      // Invalid token - redirect to login
+      if (error || !user) {
+        // Invalid token - redirect to login
+        return new Response(null, {
+          status: 302,
+          headers: {
+            Location: `/login?redirect=${encodeURIComponent(url.pathname)}`,
+          },
+        });
+      }
+    } else {
+      // No Supabase client - redirect to login
       return new Response(null, {
         status: 302,
         headers: {

@@ -7,16 +7,38 @@ import type { Database } from "../db/database.types.ts";
 const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL || import.meta.env.SUPABASE_URL;
 const supabaseKey = import.meta.env.PUBLIC_SUPABASE_KEY || import.meta.env.SUPABASE_KEY;
 
-if (!supabaseUrl) {
-  throw new Error(
-    "Missing SUPABASE_URL environment variable. Please set PUBLIC_SUPABASE_URL (or SUPABASE_URL) in your .env file."
-  );
+// Create Supabase client only if both URL and key are available
+// This prevents errors during module import if variables are not yet available
+let supabaseClient: ReturnType<typeof createClient<Database>> | null = null;
+
+if (supabaseUrl && supabaseKey) {
+  supabaseClient = createClient<Database>(supabaseUrl, supabaseKey);
+} else {
+  // Log warning instead of throwing error to allow app to load
+  // The error will be caught when trying to use the client
+  if (typeof console !== "undefined" && import.meta.env.DEV) {
+    console.warn(
+      "Supabase client not initialized. Missing environment variables:",
+      {
+        hasUrl: !!supabaseUrl,
+        hasKey: !!supabaseKey,
+        url: supabaseUrl || "missing",
+        key: supabaseKey ? "***" : "missing",
+      }
+    );
+  }
 }
 
-if (!supabaseKey) {
-  throw new Error(
-    "Missing SUPABASE_KEY environment variable. Please set PUBLIC_SUPABASE_KEY (or SUPABASE_KEY) in your .env file."
-  );
+// Export a getter function that throws a helpful error if client is not available
+export function getSupabaseClient() {
+  if (!supabaseClient) {
+    throw new Error(
+      "Supabase client not initialized. Please ensure SUPABASE_URL and SUPABASE_KEY (or PUBLIC_SUPABASE_URL and PUBLIC_SUPABASE_KEY) are set in your environment variables."
+    );
+  }
+  return supabaseClient;
 }
 
-export const supabaseClient = createClient<Database>(supabaseUrl, supabaseKey);
+// Export the client directly for backward compatibility
+// This will be null if variables are not available, but allows the app to load
+export { supabaseClient };

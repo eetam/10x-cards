@@ -44,6 +44,15 @@ export const GET: APIRoute = async ({ request, locals }) => {
       });
     }
 
+    // Check if Supabase client is available
+    if (!locals.supabase) {
+      // Supabase client not available - user is not authenticated
+      return ResponseUtils.createSuccessResponse({
+        user: null,
+        isAuthenticated: false,
+      });
+    }
+
     // Verify JWT token with Supabase
     const { user, error: authError } = await AuthUtils.verifyToken(locals.supabase, token);
 
