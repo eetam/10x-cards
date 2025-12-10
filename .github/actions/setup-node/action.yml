@@ -1,0 +1,20 @@
+name: "Setup Node.js from .nvmrc"
+description: "Setup Node.js version from .nvmrc file and install dependencies"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Read Node.js version from .nvmrc
+      id: node-version
+      shell: bash
+      run: echo "NODE_VERSION=$(cat .nvmrc)" >> $GITHUB_OUTPUT
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v6
+      with:
+        node-version: ${{ steps.node-version.outputs.NODE_VERSION }}
+        cache: "npm"
+
+    - name: Install dependencies
+      shell: bash
+      run: npm ci

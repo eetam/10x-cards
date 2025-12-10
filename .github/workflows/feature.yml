@@ -1,16 +1,20 @@
-name: CI/CD - Main Branch
+name: CI - Feature Branches
 
 on:
   push:
     branches:
+      - "feature/**"
+      - "feat/**"
+  pull_request:
+    branches:
       - main
+      - develop
 
 jobs:
-  build-test-deploy:
+  build-lint-test:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      deployments: write
     env:
       SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
       SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
@@ -29,11 +33,3 @@ jobs:
 
       - name: Run CI steps
         uses: ./.github/actions/ci-steps
-
-      - name: Deploy to Cloudflare Workers
-        uses: cloudflare/wrangler-action@v3
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: deploy
-          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
