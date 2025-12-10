@@ -260,3 +260,4 @@ Wykorzystane komponenty: Button, Card, Dialog, Table, Input, Textarea, Select, P
 </unresolved_issues>
 
 </conversation_summary>
+

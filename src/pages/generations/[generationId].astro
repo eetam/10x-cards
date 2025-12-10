@@ -1,0 +1,23 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { GenerationReviewViewWithProvider } from "../../components/generation/GenerationReviewViewWithProvider";
+
+const { generationId } = Astro.params;
+
+if (!generationId) {
+  return Astro.redirect("/");
+}
+
+// Validate UUID format
+const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+if (!uuidRegex.test(generationId)) {
+  return Astro.redirect("/");
+}
+---
+
+<Layout title="Przegląd propozycji fiszek - 10xCards">
+  <main class="container mx-auto px-4 py-8 max-w-6xl">
+    <GenerationReviewViewWithProvider client:load generationId={generationId} />
+  </main>
+</Layout>
+

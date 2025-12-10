@@ -83,6 +83,15 @@ export function GenerationForm() {
 
       clearTimeout(longOperationTimer);
 
+      // Save proposals to sessionStorage for the review view
+      if (response.proposals && response.proposals.length > 0) {
+        try {
+          sessionStorage.setItem(`generation-${response.generationId}-proposals`, JSON.stringify(response.proposals));
+        } catch {
+          // Ignore storage errors
+        }
+      }
+
       // Redirect to generation details page
       window.location.href = `/generations/${response.generationId}`;
     } catch (err) {

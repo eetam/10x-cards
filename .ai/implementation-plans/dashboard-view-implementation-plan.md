@@ -2,9 +2,10 @@
 
 ## 1. Przegląd
 
-Dashboard (ekran powitania) jest głównym punktem wejścia do aplikacji 10xCards. Widok ten pełni funkcję prezentacji aplikacji dla niezalogowanych użytkowników oraz centrum informacji i nawigacji dla zalogowanych użytkowników. 
+Dashboard (ekran powitania) jest głównym punktem wejścia do aplikacji 10xCards. Widok ten pełni funkcję prezentacji aplikacji dla niezalogowanych użytkowników oraz centrum informacji i nawigacji dla zalogowanych użytkowników.
 
 Główne cele widoku:
+
 - Prezentacja aplikacji i jej funkcjonalności dla nowych użytkowników
 - Wyświetlenie podsumowania statystyk dla zalogowanych użytkowników (liczba fiszek, fiszki do powtórki)
 - Szybki dostęp do kluczowych funkcji aplikacji przez przyciski CTA
@@ -303,6 +304,7 @@ Widok Dashboard wymaga dostępu do stanu autoryzacji użytkownika. Stan ten powi
   - `error: string | null` - błąd autoryzacji
 
 Hook `useAuth()` powinien być używany w komponencie Dashboard do:
+
 - Sprawdzenia czy użytkownik jest zalogowany
 - Pobrania ID użytkownika (jeśli zalogowany)
 - Subskrypcji zmian stanu autoryzacji
@@ -333,6 +335,7 @@ function useDashboardStatistics(userId: string | null, period: TimePeriod = "30d
 ```
 
 Hook zwraca:
+
 - `data: UserStatisticsResponse | undefined` - dane statystyk
 - `isLoading: boolean` - flaga ładowania
 - `error: Error | null` - błąd pobierania
@@ -345,6 +348,7 @@ Hook zwraca:
 **Opis:** Endpoint do pobrania statystyk użytkownika. Endpoint jest opcjonalny - jeśli nie jest jeszcze zaimplementowany, widok powinien działać bez statystyk (wyświetlając tylko podstawowe informacje).
 
 **Request:**
+
 - Method: `GET`
 - Path: `/api/statistics`
 - Query Parameters:
@@ -353,6 +357,7 @@ Hook zwraca:
   - `Authorization: Bearer <jwt_token>` (wymagane dla zalogowanych użytkowników)
 
 **Response:**
+
 - Success (200 OK):
   ```typescript
   {
@@ -366,7 +371,7 @@ Hook zwraca:
     error: {
       message: string;
       code: "UNAUTHORIZED";
-    };
+    }
     success: false;
   }
   ```
@@ -376,12 +381,8 @@ Hook zwraca:
 Funkcja w `src/lib/api/statistics.api.ts`:
 
 ```typescript
-export async function fetchStatistics(
-  period: TimePeriod = "30d"
-): Promise<UserStatisticsResponse> {
-  const response = await apiClient.get<UserStatisticsResponse>(
-    `/api/statistics?period=${period}`
-  );
+export async function fetchStatistics(period: TimePeriod = "30d"): Promise<UserStatisticsResponse> {
+  const response = await apiClient.get<UserStatisticsResponse>(`/api/statistics?period=${period}`);
   return response.data;
 }
 ```
@@ -497,11 +498,13 @@ Jeśli endpoint `/api/statistics` nie jest jeszcze zaimplementowany, widok powin
 **Scenariusz:** Użytkownik próbuje pobrać statystyki, ale token JWT jest nieprawidłowy lub wygasł.
 
 **Obsługa:**
+
 - Wyświetlenie komunikatu: "Sesja wygasła. Zaloguj się ponownie."
 - Przekierowanie do `/login?redirect=/`
 - Toast notification z informacją o wygaśnięciu sesji
 
 **Implementacja:**
+
 ```typescript
 if (error?.status === 401) {
   // Przekierowanie do logowania
@@ -516,11 +519,13 @@ if (error?.status === 401) {
 **Scenariusz:** Wystąpił błąd serwera podczas pobierania statystyk.
 
 **Obsługa:**
+
 - Wyświetlenie komunikatu: "Wystąpił błąd podczas pobierania statystyk. Spróbuj ponownie."
 - Przycisk "Spróbuj ponownie" do ręcznego odświeżenia danych
 - Automatyczne ponowienie po 5 sekundach (opcjonalnie)
 
 **Implementacja:**
+
 ```typescript
 if (error?.status === 500) {
   // Wyświetlenie komunikatu błędu
@@ -534,11 +539,13 @@ if (error?.status === 500) {
 **Scenariusz:** Brak połączenia z internetem lub timeout requestu.
 
 **Obsługa:**
+
 - Wyświetlenie komunikatu: "Brak połączenia z internetem. Sprawdź połączenie i spróbuj ponownie."
 - Przycisk "Spróbuj ponownie" do ręcznego odświeżenia
 - Retry logic w kliencie API (automatyczne ponowienie)
 
 **Implementacja:**
+
 ```typescript
 if (error?.message === "Network Error" || error?.code === "ECONNABORTED") {
   // Wyświetlenie komunikatu błędu sieciowego
@@ -551,11 +558,13 @@ if (error?.message === "Network Error" || error?.code === "ECONNABORTED") {
 **Scenariusz:** Endpoint `/api/statistics` nie jest jeszcze zaimplementowany.
 
 **Obsługa:**
+
 - Ukrycie sekcji statystyk lub wyświetlenie komunikatu "Statystyki wkrótce"
 - Nie wyświetlanie błędów związanych z brakiem endpointu
 - Użycie danych z innych źródeł (np. liczba fiszek z `/api/flashcards`)
 
 **Implementacja:**
+
 ```typescript
 if (error?.status === 404) {
   // Ukrycie sekcji statystyk lub wyświetlenie komunikatu
@@ -569,11 +578,13 @@ if (error?.status === 404) {
 **Scenariusz:** Nieprawidłowe parametry query (np. nieprawidłowy `period`).
 
 **Obsługa:**
+
 - Wyświetlenie komunikatu: "Nieprawidłowe parametry. Używam domyślnych wartości."
 - Automatyczne użycie domyślnych wartości (`period: "30d"`)
 - Logowanie błędu w konsoli (tylko w development)
 
 **Implementacja:**
+
 ```typescript
 if (error?.status === 400) {
   // Wyświetlenie komunikatu

@@ -321,3 +321,43 @@ export interface StudySessionQuery {
 export interface StatisticsQuery {
   period?: TimePeriod;
 }
+
+// ============================================================================
+// Generation Review ViewModel Types
+// ============================================================================
+
+/**
+ * Status propozycji fiszki w widoku przeglądu
+ */
+export type ProposalStatus = "pending" | "accepted" | "rejected" | "edited";
+
+/**
+ * ViewModel dla propozycji z dodatkowym statusem i edytowaną zawartością
+ */
+export interface ProposalViewModel extends FlashcardProposal {
+  status: ProposalStatus;
+  editedFront?: string; // edytowany awers (jeśli został edytowany)
+  editedBack?: string; // edytowany rewers (jeśli został edytowany)
+}
+
+/**
+ * Typ danych formularza edycji propozycji
+ */
+export interface EditProposalFormData {
+  front: string; // max 200 characters
+  back: string; // max 500 characters
+}
+
+/**
+ * Typ stanu postępu zapisywania wszystkich zaakceptowanych propozycji
+ */
+export interface SaveProgressState {
+  isSaving: boolean;
+  current: number; // liczba zapisanych fiszek
+  total: number; // całkowita liczba fiszek do zapisania
+  errors: Array<{
+    index: number;
+    proposal: ProposalViewModel;
+    error: ApiError;
+  }>; // błędy podczas zapisywania
+}

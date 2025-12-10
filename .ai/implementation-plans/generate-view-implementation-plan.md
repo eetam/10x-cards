@@ -5,6 +5,7 @@
 Widok generowania fiszek (`/generate`) umożliwia użytkownikom wklejenie tekstu źródłowego (1000-10000 znaków) i wygenerowanie propozycji fiszek przez AI. Widok jest chroniony i wymaga autoryzacji. Po pomyślnym wygenerowaniu propozycji, użytkownik jest automatycznie przekierowywany do widoku przeglądu propozycji (`/generations/{generationId}`).
 
 Widok realizuje wymagania funkcjonalne:
+
 - **FR-005**: Możliwość wklejenia tekstu (1000-10000 znaków)
 - **FR-006**: System analizuje tekst przy użyciu AI, aby wygenerować propozycje fiszek
 - **US-005**: Generowanie propozycji fiszek z tekstu
@@ -73,7 +74,7 @@ GeneratePage (Astro)
   - `onChange` (sourceText) - aktualizacja licznika znaków
   - `onFocus` / `onBlur` - obsługa focus states dla dostępności
 - **Obsługiwana walidacja:**
-  - `sourceText`: 
+  - `sourceText`:
     - Wymagane (nie może być puste)
     - Minimalna długość: 1000 znaków (po trim)
     - Maksymalna długość: 10000 znaków
@@ -112,6 +113,7 @@ GeneratePage (Astro)
 ### Typy z `src/types.ts` (już istniejące)
 
 #### CreateGenerationRequest
+
 ```typescript
 interface CreateGenerationRequest {
   sourceText: string; // 1000-10000 characters
@@ -120,6 +122,7 @@ interface CreateGenerationRequest {
 ```
 
 #### GenerateFlashcardsResponse
+
 ```typescript
 interface GenerateFlashcardsResponse {
   generationId: string;
@@ -130,6 +133,7 @@ interface GenerateFlashcardsResponse {
 ```
 
 #### FlashcardProposal
+
 ```typescript
 interface FlashcardProposal {
   front: string;
@@ -139,13 +143,13 @@ interface FlashcardProposal {
 ```
 
 #### ApiResponse<T>
+
 ```typescript
-type ApiResponse<T> =
-  | { data: T; success: true }
-  | { error: ApiError; success: false };
+type ApiResponse<T> = { data: T; success: true } | { error: ApiError; success: false };
 ```
 
 #### ApiError
+
 ```typescript
 interface ApiError {
   message: string;
@@ -157,6 +161,7 @@ interface ApiError {
 ### Nowe typy ViewModel (lokalne dla komponentu)
 
 #### GenerationFormState
+
 ```typescript
 interface GenerationFormState {
   isSubmitting: boolean;
@@ -167,12 +172,14 @@ interface GenerationFormState {
 ```
 
 **Pola:**
+
 - `isSubmitting: boolean` - czy formularz jest w trakcie wysyłania
 - `error: ApiError | null` - błąd z API (null gdy brak błędu)
 - `progress: number` - postęp generowania (0-100), używany tylko dla długich operacji
 - `startTime: number | null` - timestamp rozpoczęcia generowania, używany do obliczania czasu trwania
 
 #### CharacterCounterProps
+
 ```typescript
 interface CharacterCounterProps {
   current: number;
@@ -182,6 +189,7 @@ interface CharacterCounterProps {
 ```
 
 **Pola:**
+
 - `current: number` - aktualna liczba znaków w polu tekstowym
 - `min: number` - minimalna wymagana liczba znaków (1000)
 - `max: number` - maksymalna dozwolona liczba znaków (10000)
@@ -215,21 +223,23 @@ function useGenerationForm() {
   const form = useForm<CreateGenerationRequest>({...});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<ApiError | null>(null);
-  
+
   const onSubmit = async (data: CreateGenerationRequest) => {
     // Logika wysyłania
   };
-  
+
   return { form, isSubmitting, error, onSubmit };
 }
 ```
 
 **Zalety:**
+
 - Separacja logiki od UI
 - Łatwiejsze testowanie
 - Możliwość reużycia w innych komponentach
 
 **Wady:**
+
 - Dodatkowa warstwa abstrakcji (może być niepotrzebna dla prostego formularza)
 
 **Rekomendacja:** Dla MVP można pozostawić logikę bezpośrednio w komponencie. Jeśli formularz stanie się bardziej złożony, można wyekstrahować hook.
@@ -237,6 +247,7 @@ function useGenerationForm() {
 ### React Query (nie wymagany)
 
 React Query nie jest wymagany dla tego widoku, ponieważ:
+
 - Formularz wykonuje mutację (POST), nie query
 - Po sukcesie następuje przekierowanie, więc nie ma potrzeby cache'owania
 - Błędy są obsługiwane lokalnie w komponencie
@@ -261,6 +272,7 @@ React Query nie jest wymagany dla tego widoku, ponieważ:
 ```
 
 **Walidacja przed wysłaniem:**
+
 - Trim whitespace z `sourceText`
 - Sprawdzenie długości: 1000-10000 znaków
 - Jeśli `model` nie jest podany, używa domyślnego z konfiguracji (lub nie wysyła, jeśli API używa domyślnego)
@@ -279,20 +291,21 @@ React Query nie jest wymagany dla tego widoku, ponieważ:
 ```
 
 **Obsługa odpowiedzi:**
-- **Sukces (201):** 
-  - Zapisanie `generationId` 
+
+- **Sukces (201):**
+  - Zapisanie `generationId`
   - Przekierowanie do `/generations/{generationId}`
   - Opcjonalnie: toast notification z potwierdzeniem
-- **Błąd (400):** 
+- **Błąd (400):**
   - Wyświetlenie błędu walidacji w formularzu
   - Mapowanie błędów API na pola formularza (jeśli API zwraca `field`)
-- **Błąd (401):** 
+- **Błąd (401):**
   - Przekierowanie do `/login?redirect=/generate`
   - Toast z komunikatem "Sesja wygasła"
-- **Błąd (429):** 
+- **Błąd (429):**
   - Wyświetlenie komunikatu o rate limiting
   - Opcjonalnie: wyświetlenie `Retry-After` header
-- **Błąd (500):** 
+- **Błąd (500):**
   - Wyświetlenie ogólnego komunikatu błędu
   - Możliwość ponowienia
 
@@ -303,19 +316,16 @@ const onSubmit = async (data: CreateGenerationRequest) => {
   setIsSubmitting(true);
   setError(null);
   const startTime = Date.now();
-  
+
   try {
     // Trim sourceText przed wysłaniem
     const trimmedData = {
       ...data,
       sourceText: data.sourceText.trim(),
     };
-    
-    const response = await apiClient.post<GenerateFlashcardsResponse>(
-      "/api/generations",
-      trimmedData
-    );
-    
+
+    const response = await apiClient.post<GenerateFlashcardsResponse>("/api/generations", trimmedData);
+
     // Przekierowanie do widoku propozycji
     window.location.href = `/generations/${response.generationId}`;
   } catch (err) {
@@ -324,7 +334,7 @@ const onSubmit = async (data: CreateGenerationRequest) => {
         message: err.message,
         code: err.code,
       });
-      
+
       // Obsługa błędów autoryzacji
       if (err.status === 401) {
         window.location.href = `/login?redirect=/generate`;
@@ -349,6 +359,7 @@ const onSubmit = async (data: CreateGenerationRequest) => {
 **Akcja:** Użytkownik wkleja tekst do pola textarea
 
 **Reakcja:**
+
 - Licznik znaków aktualizuje się w czasie rzeczywistym
 - Jeśli tekst < 1000 znaków: licznik wyświetla się na czerwono, przycisk "Generuj" może być nieaktywny
 - Jeśli tekst w zakresie 1000-10000: licznik wyświetla się na zielono, przycisk "Generuj" aktywny
@@ -359,6 +370,7 @@ const onSubmit = async (data: CreateGenerationRequest) => {
 **Akcja:** Użytkownik klika przycisk "Generuj"
 
 **Reakcja:**
+
 - Walidacja formularza (React Hook Form + Zod)
 - Jeśli walidacja nie powiodła się: wyświetlenie błędów inline pod polami
 - Jeśli walidacja powiodła się:
@@ -372,6 +384,7 @@ const onSubmit = async (data: CreateGenerationRequest) => {
 **Akcja:** API zwraca sukces (201) z `generationId` i `proposals`
 
 **Reakcja:**
+
 - Automatyczne przekierowanie do `/generations/{generationId}`
 - Opcjonalnie: toast notification z komunikatem "Fiszki wygenerowane pomyślnie"
 
@@ -380,6 +393,7 @@ const onSubmit = async (data: CreateGenerationRequest) => {
 **Akcja:** API zwraca błąd walidacji (400)
 
 **Reakcja:**
+
 - Wyświetlenie błędu w `Alert` komponencie
 - Jeśli API zwraca `field`, wyświetlenie błędu inline pod odpowiednim polem
 - Przycisk "Generuj" wraca do normalnego stanu
@@ -390,6 +404,7 @@ const onSubmit = async (data: CreateGenerationRequest) => {
 **Akcja:** API zwraca błąd autoryzacji (401)
 
 **Reakcja:**
+
 - Przekierowanie do `/login?redirect=/generate`
 - Toast z komunikatem "Sesja wygasła. Zaloguj się ponownie."
 
@@ -398,6 +413,7 @@ const onSubmit = async (data: CreateGenerationRequest) => {
 **Akcja:** API zwraca błąd rate limiting (429)
 
 **Reakcja:**
+
 - Wyświetlenie komunikatu w `Alert`: "Zbyt wiele requestów. Spróbuj za chwilę."
 - Jeśli API zwraca `Retry-After` header, wyświetlenie czasu oczekiwania
 - Przycisk "Generuj" nieaktywny do czasu wygaśnięcia limitu
@@ -407,6 +423,7 @@ const onSubmit = async (data: CreateGenerationRequest) => {
 **Akcja:** API zwraca błąd serwera (500)
 
 **Reakcja:**
+
 - Wyświetlenie komunikatu w `Alert`: "Wystąpił błąd serwera. Spróbuj ponownie."
 - Przycisk "Generuj" wraca do normalnego stanu
 - Możliwość ponowienia
@@ -416,6 +433,7 @@ const onSubmit = async (data: CreateGenerationRequest) => {
 **Akcja:** Użytkownik używa klawiatury
 
 **Reakcja:**
+
 - `Tab` - przechodzenie między polami formularza
 - `Enter` w polu textarea - nowa linia (nie wysyła formularza)
 - `Enter` w polu Select - otwarcie dropdown
@@ -443,10 +461,7 @@ const GenerationFormSchema = z.object({
   model: z
     .string()
     .optional()
-    .refine(
-      (val) => !val || ALLOWED_MODELS.includes(val),
-      { message: "Nieprawidłowy model AI" }
-    ),
+    .refine((val) => !val || ALLOWED_MODELS.includes(val), { message: "Nieprawidłowy model AI" }),
 });
 ```
 
@@ -470,7 +485,7 @@ const GenerationFormSchema = z.object({
 #### Walidacja w czasie rzeczywistym
 
 - **Licznik znaków:** Aktualizuje się przy każdej zmianie tekstu (`useWatch`)
-- **Wizualna walidacja:** 
+- **Wizualna walidacja:**
   - Zielony kolor licznika gdy tekst w zakresie 1000-10000
   - Czerwony kolor licznika gdy tekst poza zakresem
 - **Przycisk "Generuj":**
@@ -487,6 +502,7 @@ API wykonuje własną walidację zgodnie z planem API:
 - **model:** Opcjonalny, musi być z dozwolonej listy
 
 **Obsługa błędów walidacji z API:**
+
 - Jeśli API zwraca błąd 400 z `field` w odpowiedzi, wyświetlenie błędu inline pod odpowiednim polem
 - Jeśli API zwraca błąd 400 bez `field`, wyświetlenie ogólnego komunikatu w `Alert`
 
@@ -526,6 +542,7 @@ API wykonuje własną walidację zgodnie z planem API:
 **Scenariusz:** Użytkownik próbuje wysłać formularz z tekstem < 1000 znaków
 
 **Obsługa:**
+
 - React Hook Form blokuje wysłanie
 - Wyświetlenie błędu inline pod polem `sourceText`
 - Przycisk "Generuj" pozostaje nieaktywny
@@ -536,12 +553,14 @@ API wykonuje własną walidację zgodnie z planem API:
 **Scenariusz:** API zwraca błąd walidacji (np. tekst po trim < 1000 znaków)
 
 **Obsługa:**
+
 - Wyświetlenie błędu w `Alert` komponencie
 - Jeśli API zwraca `field` w odpowiedzi, wyświetlenie błędu inline pod odpowiednim polem
 - Przycisk "Generuj" wraca do normalnego stanu
 - Użytkownik może poprawić dane i spróbować ponownie
 
 **Przykład odpowiedzi API:**
+
 ```json
 {
   "success": false,
@@ -558,6 +577,7 @@ API wykonuje własną walidację zgodnie z planem API:
 **Scenariusz:** Token JWT wygasł lub jest nieprawidłowy
 
 **Obsługa:**
+
 - Przekierowanie do `/login?redirect=/generate`
 - Toast notification z komunikatem "Sesja wygasła. Zaloguj się ponownie."
 - Po zalogowaniu, automatyczne przekierowanie z powrotem do `/generate`
@@ -567,6 +587,7 @@ API wykonuje własną walidację zgodnie z planem API:
 **Scenariusz:** Użytkownik przekroczył limit requestów
 
 **Obsługa:**
+
 - Wyświetlenie komunikatu w `Alert`: "Zbyt wiele requestów. Spróbuj za chwilę."
 - Jeśli API zwraca `Retry-After` header, wyświetlenie czasu oczekiwania (np. "Spróbuj ponownie za 60 sekund")
 - Przycisk "Generuj" nieaktywny do czasu wygaśnięcia limitu
@@ -577,6 +598,7 @@ API wykonuje własną walidację zgodnie z planem API:
 **Scenariusz:** Błąd po stronie serwera (np. problem z AI API, baza danych)
 
 **Obsługa:**
+
 - Wyświetlenie komunikatu w `Alert`: "Wystąpił błąd serwera. Spróbuj ponownie."
 - Przycisk "Generuj" wraca do normalnego stanu
 - Możliwość ponowienia przez kliknięcie "Generuj" ponownie
@@ -587,11 +609,13 @@ API wykonuje własną walidację zgodnie z planem API:
 **Scenariusz:** Brak połączenia z internetem lub timeout
 
 **Obsługa:**
+
 - Wyświetlenie komunikatu w `Alert`: "Brak połączenia z internetem. Sprawdź połączenie i spróbuj ponownie."
 - Przycisk "Generuj" wraca do normalnego stanu
 - Możliwość ponowienia po przywróceniu połączenia
 
 **Implementacja w `apiClient`:**
+
 ```typescript
 catch (error) {
   if (error instanceof Error) {
@@ -607,6 +631,7 @@ catch (error) {
 **Scenariusz:** Generowanie trwa dłużej niż oczekiwano (>30 sekund)
 
 **Obsługa:**
+
 - Dla operacji >5 sekund: wyświetlenie komunikatu "To może zająć do 30 sekund"
 - Opcjonalnie: progress indicator (jeśli API wspiera streaming)
 - Jeśli timeout: wyświetlenie komunikatu "Operacja przekroczyła limit czasu. Spróbuj ponownie."
@@ -616,6 +641,7 @@ catch (error) {
 **Scenariusz:** Błąd, który nie pasuje do żadnej kategorii
 
 **Obsługa:**
+
 - Wyświetlenie ogólnego komunikatu w `Alert`: "Wystąpił nieoczekiwany błąd. Spróbuj ponownie."
 - Logowanie błędu do konsoli (tylko w development)
 - Przycisk "Generuj" wraca do normalnego stanu
@@ -634,7 +660,7 @@ function getErrorMessage(error: ApiError): string {
     NETWORK_ERROR: "Brak połączenia z internetem. Sprawdź połączenie.",
     UNKNOWN_ERROR: "Wystąpił nieoczekiwany błąd. Spróbuj ponownie.",
   };
-  
+
   return errorMessages[error.code || ""] || error.message || "Wystąpił błąd. Spróbuj ponownie.";
 }
 ```
@@ -642,6 +668,7 @@ function getErrorMessage(error: ApiError): string {
 ### Przywracanie stanu po błędzie
 
 Po wystąpieniu błędu:
+
 1. `isSubmitting` ustawione na `false`
 2. `error` ustawione na obiekt błędu
 3. Pola formularza pozostają wypełnione (użytkownik nie traci danych)
