@@ -47,7 +47,7 @@ export const useAuthStore = create<AuthState>((set) => ({
       try {
         const sessionData = await getAuthSession();
 
-        if (sessionData.isAuthenticated && sessionData.user) {
+        if (sessionData && sessionData.isAuthenticated && sessionData.user) {
           // Create user object from API response
           const user: User = {
             id: sessionData.user.id,
@@ -74,8 +74,12 @@ export const useAuthStore = create<AuthState>((set) => ({
           });
           return;
         }
-      } catch {
-        // If API call fails, fall back to Supabase client
+      } catch (apiError) {
+        // If API call fails, log error and fall back to Supabase client
+        if (import.meta.env.DEV) {
+          const errorMessage = apiError instanceof Error ? apiError.message : String(apiError);
+          console.warn("API auth session failed, falling back to Supabase client:", errorMessage);
+        }
       }
 
       // If Supabase client is available, use it directly

@@ -36,7 +36,7 @@ export function Dashboard() {
       )}
       {error && (
         <div className="rounded-lg border border-destructive bg-destructive/10 p-4 text-destructive text-sm mb-4">
-          Błąd autoryzacji: {error}
+          Błąd autoryzacji: {typeof error === "string" ? error : JSON.stringify(error)}
         </div>
       )}
     </div>
