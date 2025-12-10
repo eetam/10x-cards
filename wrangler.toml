@@ -2,9 +2,9 @@ name = "10x-cards"
 compatibility_date = "2025-12-10"
 compatibility_flags = ["nodejs_compat"]
 
-# For Cloudflare Pages deployment (recommended for Astro)
-# Astro Cloudflare adapter automatically handles static assets via Pages
-# The worker entry point is automatically detected from dist/_worker.js/index.js
+# For Cloudflare Pages deployment (required for Astro Cloudflare adapter)
+# This tells Wrangler where to find the built static assets
+pages_build_output_dir = "dist"
 
 # KV namespace for sessions (required by @astrojs/cloudflare adapter)
 # Wrangler will automatically create the namespace on first deploy if id is not specified
