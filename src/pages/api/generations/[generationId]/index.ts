@@ -32,9 +32,6 @@ export const GET: APIRoute = async ({ request, locals, params }) => {
     // Check if we should use default user ID for testing
     if (defaultUserId) {
       userId = defaultUserId;
-      if (import.meta.env.NODE_ENV === "development") {
-        console.log(`Using default user ID for testing: ${userId}`);
-      }
     } else {
       // Step 1: Authentication validation
       const authHeader = request.headers.get("authorization");
@@ -108,11 +105,7 @@ export const GET: APIRoute = async ({ request, locals, params }) => {
 
     // Step 6: Return success response
     return ResponseUtils.createSuccessResponse(responseData, 200);
-  } catch (error) {
-    // Log error for debugging in development
-    if (import.meta.env.NODE_ENV === "development" && error instanceof Error) {
-      console.error("Error in GET /api/generations/[generationId]:", error.message);
-    }
+  } catch {
     return ResponseUtils.createInternalErrorResponse();
   }
 };

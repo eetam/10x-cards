@@ -46,15 +46,12 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
     // Get default user ID for testing
     const defaultUserId = EnvConfig.getDefaultUserId();
-    console.log("DEFAULT_USER_ID env var:", import.meta.env.DEFAULT_USER_ID);
-    console.log("OPENROUTER_USE_MOCK env var:", import.meta.env.OPENROUTER_USE_MOCK);
 
     let userId: string;
 
     // Check if we should use default user ID for testing
     if (defaultUserId) {
       userId = defaultUserId;
-      console.log(`Using default user ID for testing: ${userId}`);
     } else {
       // Normal authentication flow
       const authHeader = request.headers.get("authorization");
@@ -155,11 +152,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     };
 
     return ResponseUtils.createSuccessResponse(response, 201);
-  } catch (error) {
-    // Log error for debugging in development
-    if (import.meta.env.NODE_ENV === "development" && error instanceof Error) {
-      console.error("Error in POST /api/generations:", error.message);
-    }
+  } catch {
     return ResponseUtils.createInternalErrorResponse();
   }
 };
@@ -184,9 +177,6 @@ export const GET: APIRoute = async ({ request, locals }) => {
     // Check if we should use default user ID for testing
     if (defaultUserId) {
       userId = defaultUserId;
-      if (import.meta.env.NODE_ENV === "development") {
-        console.log(`Using default user ID for testing: ${userId}`);
-      }
     } else {
       // Normal authentication flow
       const authHeader = request.headers.get("authorization");
@@ -264,11 +254,7 @@ export const GET: APIRoute = async ({ request, locals }) => {
 
     // Step 6: Return success response
     return ResponseUtils.createSuccessResponse(response, 200);
-  } catch (error) {
-    // Log error for debugging in development
-    if (import.meta.env.NODE_ENV === "development" && error instanceof Error) {
-      console.error("Error in GET /api/generations:", error.message);
-    }
+  } catch {
     return ResponseUtils.createInternalErrorResponse();
   }
 };

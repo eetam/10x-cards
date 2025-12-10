@@ -30,4 +30,3 @@ export const EditProposalSchema = z.object({
  * Type inferred from EditProposalSchema
  */
 export type EditProposalFormData = z.infer<typeof EditProposalSchema>;
-

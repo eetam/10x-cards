@@ -30,4 +30,3 @@ export function SaveAllButton({ acceptedCount, isSaving, onSave }: SaveAllButton
     </Button>
   );
 }
-

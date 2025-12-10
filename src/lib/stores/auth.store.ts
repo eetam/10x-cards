@@ -74,7 +74,7 @@ export const useAuthStore = create<AuthState>((set) => ({
           });
           return;
         }
-      } catch (apiError) {
+      } catch {
         // If API call fails, fall back to Supabase client
       }
 

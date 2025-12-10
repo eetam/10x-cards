@@ -108,7 +108,12 @@ export function FlashcardsCards({ flashcards, onEdit, onDelete }: FlashcardsCard
   return (
     <div className="space-y-3">
       {flashcards.map((flashcard) => (
-        <FlashcardCardItem key={flashcard.id} flashcard={flashcard} onEdit={() => onEdit(flashcard)} onDelete={() => onDelete(flashcard)} />
+        <FlashcardCardItem
+          key={flashcard.id}
+          flashcard={flashcard}
+          onEdit={() => onEdit(flashcard)}
+          onDelete={() => onDelete(flashcard)}
+        />
       ))}
     </div>
   );

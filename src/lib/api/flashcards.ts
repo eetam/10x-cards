@@ -64,4 +64,3 @@ export async function updateFlashcard(id: string, data: UpdateFlashcardRequest):
 export async function deleteFlashcard(id: string): Promise<{ message: string }> {
   return apiClient.delete<{ message: string }>(`/api/flashcards/${id}`);
 }
-

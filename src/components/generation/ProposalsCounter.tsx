@@ -18,4 +18,3 @@ export function ProposalsCounter({ total, accepted }: ProposalsCounterProps) {
     </div>
   );
 }
-

@@ -355,9 +355,9 @@ export interface SaveProgressState {
   isSaving: boolean;
   current: number; // liczba zapisanych fiszek
   total: number; // całkowita liczba fiszek do zapisania
-  errors: Array<{
+  errors: {
     index: number;
     proposal: ProposalViewModel;
     error: ApiError;
-  }>; // błędy podczas zapisywania
+  }[]; // błędy podczas zapisywania
 }

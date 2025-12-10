@@ -310,7 +310,7 @@ export class GenerationService {
       };
 
       await this.supabase.from("generation_error_logs").insert(errorLog);
-    } catch (error) {
+    } catch {
       // Error logging failed - non-critical
     }
   }

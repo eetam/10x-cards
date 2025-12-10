@@ -76,12 +76,24 @@ export function FlashcardsPagination({ pagination, onPageChange }: FlashcardsPag
       </div>
       <div className="flex items-center gap-1">
         {/* First page */}
-        <Button variant="outline" size="icon" onClick={() => onPageChange(1)} disabled={!canGoPrevious} title="Pierwsza strona">
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={() => onPageChange(1)}
+          disabled={!canGoPrevious}
+          title="Pierwsza strona"
+        >
           <ChevronsLeft className="size-4" />
         </Button>
 
         {/* Previous page */}
-        <Button variant="outline" size="icon" onClick={() => onPageChange(page - 1)} disabled={!canGoPrevious} title="Poprzednia strona">
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={() => onPageChange(page - 1)}
+          disabled={!canGoPrevious}
+          title="Poprzednia strona"
+        >
           <ChevronLeft className="size-4" />
         </Button>
 
@@ -93,7 +105,12 @@ export function FlashcardsPagination({ pagination, onPageChange }: FlashcardsPag
                 ...
               </span>
             ) : (
-              <Button key={pageNum} variant={pageNum === page ? "default" : "outline"} size="icon" onClick={() => onPageChange(pageNum)}>
+              <Button
+                key={pageNum}
+                variant={pageNum === page ? "default" : "outline"}
+                size="icon"
+                onClick={() => onPageChange(pageNum)}
+              >
                 {pageNum}
               </Button>
             )
@@ -106,12 +123,24 @@ export function FlashcardsPagination({ pagination, onPageChange }: FlashcardsPag
         </span>
 
         {/* Next page */}
-        <Button variant="outline" size="icon" onClick={() => onPageChange(page + 1)} disabled={!canGoNext} title="Następna strona">
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={() => onPageChange(page + 1)}
+          disabled={!canGoNext}
+          title="Następna strona"
+        >
           <ChevronRight className="size-4" />
         </Button>
 
         {/* Last page */}
-        <Button variant="outline" size="icon" onClick={() => onPageChange(totalPages)} disabled={!canGoNext} title="Ostatnia strona">
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={() => onPageChange(totalPages)}
+          disabled={!canGoNext}
+          title="Ostatnia strona"
+        >
           <ChevronsRight className="size-4" />
         </Button>
       </div>

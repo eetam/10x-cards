@@ -3,14 +3,7 @@
 import * as React from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "../ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "../ui/dialog";
 import { Button } from "../ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "../ui/form";
 import { Input } from "../ui/input";
@@ -33,13 +26,7 @@ interface EditProposalDialogProps {
  * Contains form with front and back fields, validation, and character counters
  * After saving, proposal is automatically accepted
  */
-export function EditProposalDialog({
-  open,
-  onOpenChange,
-  proposal,
-  proposalIndex,
-  onSave,
-}: EditProposalDialogProps) {
+export function EditProposalDialog({ open, onOpenChange, proposal, proposalIndex, onSave }: EditProposalDialogProps) {
   const [isSaving, setIsSaving] = React.useState(false);
 
   const form = useForm<EditProposalFormData>({
@@ -66,7 +53,7 @@ export function EditProposalDialog({
     try {
       await onSave(proposalIndex, data.front.trim(), data.back.trim());
       onOpenChange(false);
-    } catch (error) {
+    } catch {
       // Error handling is done in parent component
     } finally {
       setIsSaving(false);
@@ -83,7 +70,9 @@ export function EditProposalDialog({
       <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
           <DialogTitle>Edytuj propozycję fiszki</DialogTitle>
-          <DialogDescription>Wprowadź zmiany w awersie i rewersie fiszki. Po zapisaniu propozycja zostanie automatycznie zaakceptowana.</DialogDescription>
+          <DialogDescription>
+            Wprowadź zmiany w awersie i rewersie fiszki. Po zapisaniu propozycja zostanie automatycznie zaakceptowana.
+          </DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -145,4 +134,3 @@ export function EditProposalDialog({
     </Dialog>
   );
 }
-

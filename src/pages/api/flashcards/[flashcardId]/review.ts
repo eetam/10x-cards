@@ -13,11 +13,7 @@ export const prerender = false;
 const FlashcardIdSchema = z.string().uuid("Invalid flashcard ID format");
 
 const SubmitReviewSchema = z.object({
-  rating: z
-    .number()
-    .int()
-    .min(1, "Rating must be at least 1")
-    .max(4, "Rating must be at most 4"),
+  rating: z.number().int().min(1, "Rating must be at least 1").max(4, "Rating must be at most 4"),
   responseTime: z.number().int().positive().optional(),
 });
 
@@ -94,11 +90,7 @@ export const POST: APIRoute = async ({ request, locals, params }) => {
 
     // Step 4: Submit review
     const studyService = new StudyService(locals.supabase);
-    const { data, error } = await studyService.submitReview(
-      idValidation.data,
-      userId,
-      rating as ReviewRating
-    );
+    const { data, error } = await studyService.submitReview(idValidation.data, userId, rating as ReviewRating);
 
     if (error) {
       if (error.message === "Flashcard not found") {
@@ -122,7 +114,7 @@ export const POST: APIRoute = async ({ request, locals, params }) => {
     };
 
     return ResponseUtils.createSuccessResponse(response);
-  } catch (error) {
+  } catch {
     return ResponseUtils.createInternalErrorResponse();
   }
 };

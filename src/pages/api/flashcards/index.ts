@@ -212,7 +212,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
     // Step 8: Return success response
     return ResponseUtils.createSuccessResponse(response, 201);
-  } catch (error) {
+  } catch {
     return ResponseUtils.createInternalErrorResponse();
   }
 };
@@ -317,7 +317,7 @@ export const GET: APIRoute = async ({ request, locals }) => {
 
     // Step 6: Return success response
     return ResponseUtils.createSuccessResponse(response, 200);
-  } catch (error) {
+  } catch {
     return ResponseUtils.createInternalErrorResponse();
   }
 };

@@ -6,9 +6,7 @@ import { getGenerationDetails } from "../../lib/api/generations";
 import { createFlashcard } from "../../lib/api/flashcards";
 import { ApiClientError } from "../../lib/api/client";
 import type {
-  GenerationDetailsResponse,
   ProposalViewModel,
-  ProposalStatus,
   FlashcardProposal,
   SaveProgressState,
   ApiError,
@@ -47,21 +45,6 @@ function getProposalsFromStorage(generationId: string): FlashcardProposal[] | nu
     return Array.isArray(parsed) ? parsed : null;
   } catch {
     return null;
-  }
-}
-
-/**
- * Save proposals to sessionStorage
- */
-function saveProposalsToStorage(generationId: string, proposals: FlashcardProposal[]): void {
-  if (typeof window === "undefined") {
-    return;
-  }
-
-  try {
-    sessionStorage.setItem(`generation-${generationId}-proposals`, JSON.stringify(proposals));
-  } catch {
-    // Ignore storage errors
   }
 }
 
@@ -136,7 +119,8 @@ export function GenerationReviewView({ generationId }: GenerationReviewViewProps
         }
       }
       setError({
-        message: generationError instanceof Error ? generationError.message : "Wystąpił błąd podczas pobierania danych.",
+        message:
+          generationError instanceof Error ? generationError.message : "Wystąpił błąd podczas pobierania danych.",
         code: "API_ERROR",
       });
     }
@@ -190,24 +174,21 @@ export function GenerationReviewView({ generationId }: GenerationReviewViewProps
     setEditingProposalIndex(index);
   }, []);
 
-  const handleSaveEdit = React.useCallback(
-    async (index: number, front: string, back: string) => {
-      setProposals((prev) => {
-        const next = [...prev];
-        if (next[index]) {
-          next[index] = {
-            ...next[index],
-            status: "edited",
-            editedFront: front,
-            editedBack: back,
-          };
-        }
-        return next;
-      });
-      setEditingProposalIndex(null);
-    },
-    []
-  );
+  const handleSaveEdit = React.useCallback(async (index: number, front: string, back: string) => {
+    setProposals((prev) => {
+      const next = [...prev];
+      if (next[index]) {
+        next[index] = {
+          ...next[index],
+          status: "edited",
+          editedFront: front,
+          editedBack: back,
+        };
+      }
+      return next;
+    });
+    setEditingProposalIndex(null);
+  }, []);
 
   const handleSaveAll = React.useCallback(async () => {
     const acceptedProposals = proposals.filter((p) => p.status === "accepted" || p.status === "edited");
@@ -283,7 +264,9 @@ export function GenerationReviewView({ generationId }: GenerationReviewViewProps
       // Optionally redirect to flashcards page
       // window.location.href = "/flashcards";
     } else {
-      alert(`Zapisano ${acceptedProposals.length - errors.length} z ${acceptedProposals.length} fiszek. ${errors.length} fiszki nie zostały zapisane.`);
+      alert(
+        `Zapisano ${acceptedProposals.length - errors.length} z ${acceptedProposals.length} fiszek. ${errors.length} fiszki nie zostały zapisane.`
+      );
     }
   }, [proposals, generationId, saveFlashcardMutation]);
 
@@ -368,4 +351,3 @@ export function GenerationReviewView({ generationId }: GenerationReviewViewProps
     </div>
   );
 }
-

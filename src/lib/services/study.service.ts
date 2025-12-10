@@ -18,7 +18,7 @@ export class StudyService {
    */
   async getDueFlashcards(
     userId: string,
-    limit: number = 20
+    limit = 20
   ): Promise<{
     cards: StudyCard[];
     totalDue: number;

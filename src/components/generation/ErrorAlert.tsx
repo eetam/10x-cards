@@ -34,4 +34,3 @@ export function ErrorAlert({ error, onRetry }: ErrorAlertProps) {
     </Alert>
   );
 }
-

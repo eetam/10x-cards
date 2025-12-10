@@ -9,7 +9,12 @@ interface RatingButtonsProps {
   isSubmitting: boolean;
 }
 
-const RATING_CONFIG: { rating: ReviewRating; label: string; sublabel: string; variant: "destructive" | "secondary" | "default" | "outline" }[] = [
+const RATING_CONFIG: {
+  rating: ReviewRating;
+  label: string;
+  sublabel: string;
+  variant: "destructive" | "secondary" | "default" | "outline";
+}[] = [
   { rating: 1, label: "Powtórz", sublabel: "1", variant: "destructive" },
   { rating: 2, label: "Trudne", sublabel: "2", variant: "secondary" },
   { rating: 3, label: "Dobrze", sublabel: "3", variant: "default" },

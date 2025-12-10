@@ -32,4 +32,3 @@ export function GenerationHeader({ generation }: GenerationHeaderProps) {
     </div>
   );
 }
-

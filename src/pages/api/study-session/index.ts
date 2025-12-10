@@ -33,9 +33,6 @@ export const GET: APIRoute = async ({ request, locals }) => {
 
     if (defaultUserId) {
       userId = defaultUserId;
-      if (import.meta.env.DEV) {
-        console.log(`Using default user ID for testing: ${userId}`);
-      }
     } else {
       // Normal authentication flow
       const authHeader = request.headers.get("authorization");
@@ -91,12 +88,7 @@ export const GET: APIRoute = async ({ request, locals }) => {
     };
 
     return ResponseUtils.createSuccessResponse(response);
-  } catch (error) {
-    // Log error for debugging in development
-    if (import.meta.env.DEV && error instanceof Error) {
-      console.error("Error in GET /api/study-session:", error.message);
-      console.error(error.stack);
-    }
+  } catch {
     return ResponseUtils.createInternalErrorResponse();
   }
 };

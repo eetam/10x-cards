@@ -30,7 +30,9 @@ function parseFiltersFromURL(): FlashcardsFiltersState {
     sort: (params.get("sort") as FlashcardsFiltersState["sort"]) ?? "createdAt",
     order: (params.get("order") as "asc" | "desc") ?? "desc",
     source: params.get("source") as FlashcardsFiltersState["source"] | undefined,
-    state: params.get("state") ? (parseInt(params.get("state")!, 10) as FlashcardsFiltersState["state"]) : undefined,
+    state: params.get("state")
+      ? (parseInt(params.get("state") ?? "0", 10) as FlashcardsFiltersState["state"])
+      : undefined,
   };
 }
 
@@ -117,7 +119,7 @@ export function FlashcardsList() {
   }, [filters]);
 
   // Fetch flashcards query
-  const { data, isLoading, isError, error, refetch } = useQuery({
+  const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ["flashcards", filters],
     queryFn: () =>
       fetchFlashcards({

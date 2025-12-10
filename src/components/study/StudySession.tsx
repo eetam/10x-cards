@@ -110,7 +110,7 @@ export function StudySession() {
   );
 
   const handleExit = React.useCallback(() => {
-    window.location.href = "/";
+    window.location.replace("/");
   }, []);
 
   const handleStudyMore = React.useCallback(() => {
@@ -184,9 +184,7 @@ export function StudySession() {
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
           <AlertTitle>Błąd</AlertTitle>
-          <AlertDescription>
-            Nie udało się załadować sesji nauki. Spróbuj ponownie później.
-          </AlertDescription>
+          <AlertDescription>Nie udało się załadować sesji nauki. Spróbuj ponownie później.</AlertDescription>
         </Alert>
         <div className="flex gap-3">
           <Button variant="outline" onClick={handleExit}>
@@ -205,17 +203,13 @@ export function StudySession() {
         <div className="space-y-4">
           <BookOpen className="w-16 h-16 mx-auto text-muted-foreground" />
           <h1 className="text-2xl font-bold">Gratulacje!</h1>
-          <p className="text-muted-foreground">
-            Nie masz fiszek do powtórki. Wszystkie zostały przerobione!
-          </p>
+          <p className="text-muted-foreground">Nie masz fiszek do powtórki. Wszystkie zostały przerobione!</p>
         </div>
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <Button variant="outline" onClick={handleExit}>
             Wróć do dashboardu
           </Button>
-          <Button onClick={() => (window.location.href = "/flashcards")}>
-            Przeglądaj fiszki
-          </Button>
+          <Button onClick={() => (window.location.href = "/flashcards")}>Przeglądaj fiszki</Button>
         </div>
       </div>
     );
@@ -223,13 +217,7 @@ export function StudySession() {
 
   // Completion screen
   if (isComplete) {
-    return (
-      <StudyComplete
-        stats={sessionStats}
-        onGoToDashboard={handleExit}
-        onStudyMore={handleStudyMore}
-      />
-    );
+    return <StudyComplete stats={sessionStats} onGoToDashboard={handleExit} onStudyMore={handleStudyMore} />;
   }
 
   // Current card
@@ -265,9 +253,7 @@ export function StudySession() {
       {reviewMutation.isError && (
         <Alert variant="destructive" className="max-w-md mx-auto">
           <AlertCircle className="h-4 w-4" />
-          <AlertDescription>
-            Nie udało się zapisać oceny. Spróbuj ponownie.
-          </AlertDescription>
+          <AlertDescription>Nie udało się zapisać oceny. Spróbuj ponownie.</AlertDescription>
         </Alert>
       )}
 

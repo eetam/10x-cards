@@ -115,8 +115,7 @@ export const GET: APIRoute = async ({ request, locals, params }) => {
 
     // Step 6: Return success response
     return ResponseUtils.createSuccessResponse(responseData, 200);
-  } catch (error) {
-    // Log error for debugging in development
+  } catch {
     return ResponseUtils.createInternalErrorResponse();
   }
 };
@@ -274,8 +273,7 @@ export const PUT: APIRoute = async ({ request, locals, params }) => {
 
     // Step 8: Return success response
     return ResponseUtils.createSuccessResponse(responseData, 200);
-  } catch (error) {
-    // Log error for debugging in development
+  } catch {
     return ResponseUtils.createInternalErrorResponse();
   }
 };
@@ -360,8 +358,7 @@ export const DELETE: APIRoute = async ({ request, locals, params }) => {
 
     // Step 5: Return success response
     return ResponseUtils.createSuccessResponse({ message: "Flashcard deleted successfully" }, 200);
-  } catch (error) {
-    // Log error for debugging in development
+  } catch {
     return ResponseUtils.createInternalErrorResponse();
   }
 };

@@ -62,20 +62,30 @@ export function FlashcardsTable({ flashcards, onEdit, onDelete }: FlashcardsTabl
             <TableCell className="font-medium">{truncateText(flashcard.front, 50)}</TableCell>
             <TableCell className="text-muted-foreground">{truncateText(flashcard.back, 50)}</TableCell>
             <TableCell>
-              <Badge variant={getSourceVariant(flashcard.source as FlashcardSource)}>{SOURCE_LABELS[flashcard.source as FlashcardSource]}</Badge>
+              <Badge variant={getSourceVariant(flashcard.source as FlashcardSource)}>
+                {SOURCE_LABELS[flashcard.source as FlashcardSource]}
+              </Badge>
             </TableCell>
             <TableCell>
               <span className="text-sm text-muted-foreground">{STATE_LABELS[flashcard.state as FSRSState]}</span>
             </TableCell>
             <TableCell>
-              <span className="text-sm text-muted-foreground">{flashcard.due ? formatRelativeDate(flashcard.due) : "-"}</span>
+              <span className="text-sm text-muted-foreground">
+                {flashcard.due ? formatRelativeDate(flashcard.due) : "-"}
+              </span>
             </TableCell>
             <TableCell className="text-right">
               <div className="flex justify-end gap-1">
                 <Button variant="ghost" size="icon" onClick={() => onEdit(flashcard)} title="Edytuj">
                   <Pencil className="size-4" />
                 </Button>
-                <Button variant="ghost" size="icon" onClick={() => onDelete(flashcard)} title="Usuń" className="text-destructive hover:text-destructive">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => onDelete(flashcard)}
+                  title="Usuń"
+                  className="text-destructive hover:text-destructive"
+                >
                   <Trash2 className="size-4" />
                 </Button>
               </div>
