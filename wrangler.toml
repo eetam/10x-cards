@@ -19,6 +19,11 @@ pages_build_output_dir = "dist"
 #   - PUBLIC_SUPABASE_URL
 #   - PUBLIC_SUPABASE_KEY
 
-# KV namespace for sessions should be configured in Cloudflare Pages dashboard:
-# Settings > Functions > KV Namespace Bindings
-# Add binding: Variable name = "SESSION", KV namespace = (create or select existing)
+# KV namespace for sessions (required by @astrojs/cloudflare adapter)
+# First, create KV namespace in Cloudflare Dashboard:
+# Workers & Pages > KV > Create a namespace (name: "10x-cards-SESSION")
+# Then add the namespace ID here:
+[[kv_namespaces]]
+binding = "SESSION"
+id = ""  # TODO: Add your KV namespace ID here after creating it in Cloudflare Dashboard
+# To find the ID: Workers & Pages > KV > Select your namespace > Copy the ID
