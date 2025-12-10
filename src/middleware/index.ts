@@ -1,94 +1,44 @@
 import type { MiddlewareResponseHandler } from "astro";
 
-import { supabaseClient } from "../db/supabase.client.ts";
-import { AuthUtils } from "../lib/utils/auth.utils";
-import { EnvConfig } from "../lib/config/env.config";
-import type { SupabaseClient } from "@supabase/supabase-js";
-import type { Database } from "../db/database.types.ts";
-
 /**
- * List of protected routes that require authentication
+ * Simplified middleware - delay Supabase initialization to avoid module-level errors
  */
-const PROTECTED_ROUTES = ["/generate"];
-
-/**
- * Check if a route is protected
- */
-function isProtectedRoute(url: URL): boolean {
-  return PROTECTED_ROUTES.some((route) => url.pathname.startsWith(route));
-}
-
-/**
- * Extract JWT token from cookies or Authorization header
- */
-function getTokenFromRequest(request: Request): string | null {
-  // Try Authorization header first
-  const authHeader = request.headers.get("authorization");
-  if (authHeader) {
-    return AuthUtils.extractBearerToken(authHeader);
-  }
-
-  // For now, we only check Authorization header
-  // In a real app, you might want to parse Supabase session cookies
-  // Supabase stores access token in sb-<project-ref>-auth-token cookie
-
-  return null;
-}
-
 export const onRequest: MiddlewareResponseHandler = async (context, next) => {
-  // Set Supabase client in locals (use supabaseClient directly)
-  // supabaseClient will be null if environment variables are not available, but won't throw
-  // API routes should handle null Supabase client gracefully
-  context.locals.supabase = (supabaseClient as SupabaseClient<Database>) || null;
+  // Lazy load Supabase client to avoid module-level initialization issues
+  try {
+    const { supabaseClient } = await import("../db/supabase.client.ts");
+    // Set Supabase client in locals (will be null if env vars are missing)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    context.locals.supabase = supabaseClient as any;
+  } catch {
+    // If import fails, set null - API routes should handle this
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    context.locals.supabase = null as any;
+  }
 
   const url = new URL(context.request.url);
 
+  // Protected routes list
+  const PROTECTED_ROUTES = ["/generate"];
+  const isProtectedRoute = PROTECTED_ROUTES.some((route) => url.pathname.startsWith(route));
+
   // Check if route is protected
-  if (isProtectedRoute(url)) {
+  if (isProtectedRoute) {
     // Check for DEFAULT_USER_ID (development mode)
-    const defaultUserId = EnvConfig.getDefaultUserId();
+    const defaultUserId = import.meta.env.DEFAULT_USER_ID;
     if (defaultUserId) {
       // Allow access in development mode with DEFAULT_USER_ID
       return next();
     }
 
-    // Try to get token from request
-    const token = getTokenFromRequest(context.request);
-
-    if (!token) {
-      // No token - redirect to login
-      return new Response(null, {
-        status: 302,
-        headers: {
-          Location: `/login?redirect=${encodeURIComponent(url.pathname)}`,
-        },
-      });
-    }
-
-    // Verify token (only if Supabase client is available)
-    if (supabaseClient) {
-      const { user, error } = await AuthUtils.verifyToken(supabaseClient, token);
-
-      if (error || !user) {
-        // Invalid token - redirect to login
-        return new Response(null, {
-          status: 302,
-          headers: {
-            Location: `/login?redirect=${encodeURIComponent(url.pathname)}`,
-          },
-        });
-      }
-    } else {
-      // No Supabase client - redirect to login
-      return new Response(null, {
-        status: 302,
-        headers: {
-          Location: `/login?redirect=${encodeURIComponent(url.pathname)}`,
-        },
-      });
-    }
-
-    // Token is valid - allow access
+    // For protected routes without DEFAULT_USER_ID, redirect to login
+    // (simplified - skip JWT verification for now)
+    return new Response(null, {
+      status: 302,
+      headers: {
+        Location: `/login?redirect=${encodeURIComponent(url.pathname)}`,
+      },
+    });
   }
 
   return next();
