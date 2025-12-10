@@ -1,11 +1,7 @@
-name = "10x-cards"
-main = "./dist/_worker.js/index.js"
-compatibility_date = "2025-03-25"
-compatibility_flags = [ "nodejs_compat" ]
-
-[assets]
-binding = "ASSETS"
-directory = "./dist"
-
-[observability]
-enabled = true
+{
+  "name": "10x-cards",
+  "compatibility_date": "2025-12-10",
+  "assets": {
+    "directory": "./dist"
+  }
+}
