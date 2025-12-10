@@ -6,6 +6,19 @@ compatibility_flags = ["nodejs_compat"]
 # This tells Wrangler where to find the built static assets
 pages_build_output_dir = "dist"
 
+# Environment variables must be set in Cloudflare Pages dashboard:
+# Settings > Environment Variables > Add variable
+# Mark sensitive variables (OPENROUTER_API_KEY, SUPABASE_KEY) as "Secret"
+# Required variables:
+#   - OPENROUTER_API_KEY (Secret)
+#   - SUPABASE_URL
+#   - SUPABASE_KEY (Secret)
+# Optional variables:
+#   - OPENROUTER_USE_MOCK
+#   - DEFAULT_USER_ID
+#   - PUBLIC_SUPABASE_URL
+#   - PUBLIC_SUPABASE_KEY
+
 # KV namespace for sessions should be configured in Cloudflare Pages dashboard:
 # Settings > Functions > KV Namespace Bindings
 # Add binding: Variable name = "SESSION", KV namespace = (create or select existing)
