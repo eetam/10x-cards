@@ -10,7 +10,8 @@ import { useAuth } from "../../lib/hooks/useAuth";
  * Dashboard component - Main dashboard view combining all dashboard sections
  */
 export function Dashboard() {
-  const { isAuthenticated, userId, isLoading, error } = useAuth();
+  try {
+    const { isAuthenticated, userId, isLoading, error } = useAuth();
 
   // Show loading state while checking authentication
   if (isLoading) {
@@ -41,4 +42,16 @@ export function Dashboard() {
       )}
     </div>
   );
+  } catch (err) {
+    // Error boundary - catch any errors during render
+    const errorMessage = err instanceof Error ? err.message : String(err);
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="rounded-lg border border-destructive bg-destructive/10 p-4 text-destructive">
+          <h2 className="font-bold mb-2">Błąd podczas ładowania dashboardu</h2>
+          <p className="text-sm">{errorMessage}</p>
+        </div>
+      </div>
+    );
+  }
 }
