@@ -47,6 +47,7 @@ export default defineConfig({
       OPENROUTER_API_KEY: envField.string({
         context: "server",
         access: "secret",
+        optional: true, // Optional - only required for AI generation features
       }),
       OPENROUTER_USE_MOCK: envField.boolean({
         context: "server",
