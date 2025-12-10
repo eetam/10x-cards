@@ -65,3 +65,32 @@ export function formatISO8601Duration(duration: string): string {
   return formatDuration(seconds);
 }
 
+/**
+ * Format date as relative time (e.g., "za 2 dni", "wczoraj", "dzisiaj")
+ * @param isoString - ISO 8601 date string
+ * @returns Relative date string
+ */
+export function formatRelativeDate(isoString: string): string {
+  const date = new Date(isoString);
+  const now = new Date();
+  const diffMs = date.getTime() - now.getTime();
+  const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24));
+
+  if (diffDays === 0) {
+    return "dzisiaj";
+  } else if (diffDays === 1) {
+    return "jutro";
+  } else if (diffDays === -1) {
+    return "wczoraj";
+  } else if (diffDays > 1 && diffDays <= 7) {
+    return `za ${diffDays} dni`;
+  } else if (diffDays < -1 && diffDays >= -7) {
+    return `${Math.abs(diffDays)} dni temu`;
+  } else {
+    return new Intl.DateTimeFormat("pl-PL", {
+      day: "numeric",
+      month: "short",
+    }).format(date);
+  }
+}
+

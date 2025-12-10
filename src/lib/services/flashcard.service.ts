@@ -81,8 +81,7 @@ export class FlashcardService {
         source: command.source,
         state: 0, // New
         due: new Date().toISOString(), // Current timestamp
-        stability: 0,
-        difficulty: 0,
+        // stability and difficulty will use database defaults (1.0 and 0.3)
         lapses: 0,
         review_history: [], // Empty JSON array
       };

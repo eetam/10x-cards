@@ -1,0 +1,10 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { FlashcardsListWithProvider } from "../components/flashcards/FlashcardsListWithProvider";
+---
+
+<Layout title="Moje fiszki - 10xCards">
+  <main class="container mx-auto px-4 py-8">
+    <FlashcardsListWithProvider client:load />
+  </main>
+</Layout>
