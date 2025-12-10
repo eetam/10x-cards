@@ -85,7 +85,13 @@ function FlashcardCardItem({ flashcard, onEdit, onDelete }: FlashcardCardItemPro
             <Button variant="ghost" size="icon" onClick={onEdit} title="Edytuj">
               <Pencil className="size-4" />
             </Button>
-            <Button variant="ghost" size="icon" onClick={onDelete} title="Usuń" className="text-destructive hover:text-destructive">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onDelete}
+              title="Usuń"
+              className="text-destructive hover:text-destructive"
+            >
               <Trash2 className="size-4" />
             </Button>
           </div>

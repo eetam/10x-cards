@@ -25,7 +25,13 @@ interface DeleteFlashcardDialogProps {
 /**
  * Confirmation dialog for deleting a flashcard
  */
-export function DeleteFlashcardDialog({ open, onOpenChange, flashcard, onConfirm, isDeleting }: DeleteFlashcardDialogProps) {
+export function DeleteFlashcardDialog({
+  open,
+  onOpenChange,
+  flashcard,
+  onConfirm,
+  isDeleting,
+}: DeleteFlashcardDialogProps) {
   if (!flashcard) return null;
 
   // Truncate text for display
@@ -38,12 +44,16 @@ export function DeleteFlashcardDialog({ open, onOpenChange, flashcard, onConfirm
           <AlertDialogTitle>Czy na pewno chcesz usunąć tę fiszkę?</AlertDialogTitle>
           <AlertDialogDescription>
             <span className="block mb-2">Ta operacja jest nieodwracalna. Fiszka zostanie trwale usunięta.</span>
-            <span className="block text-foreground font-medium">"{truncatedFront}"</span>
+            <span className="block text-foreground font-medium">&quot;{truncatedFront}&quot;</span>
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel disabled={isDeleting}>Anuluj</AlertDialogCancel>
-          <AlertDialogAction onClick={onConfirm} disabled={isDeleting} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+          <AlertDialogAction
+            onClick={onConfirm}
+            disabled={isDeleting}
+            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+          >
             {isDeleting ? (
               <>
                 <Loader2 className="mr-2 size-4 animate-spin" />

@@ -50,7 +50,9 @@ export function AddFlashcardDialog({ open, onOpenChange, onSuccess }: AddFlashca
           submitLabel="Dodaj fiszkę"
           onCancel={() => onOpenChange(false)}
         />
-        {mutation.isError && <p className="text-sm text-destructive mt-2">Wystąpił błąd podczas dodawania fiszki. Spróbuj ponownie.</p>}
+        {mutation.isError && (
+          <p className="text-sm text-destructive mt-2">Wystąpił błąd podczas dodawania fiszki. Spróbuj ponownie.</p>
+        )}
       </DialogContent>
     </Dialog>
   );

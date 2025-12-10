@@ -65,7 +65,12 @@ export function FlashcardForm({ defaultValues, onSubmit, isSubmitting, submitLab
                 <CharacterCounter current={frontLength} min={1} max={MAX_FRONT_LENGTH} />
               </div>
               <FormControl>
-                <Input {...field} placeholder="Wprowadź pytanie..." maxLength={MAX_FRONT_LENGTH} disabled={isSubmitting} />
+                <Input
+                  {...field}
+                  placeholder="Wprowadź pytanie..."
+                  maxLength={MAX_FRONT_LENGTH}
+                  disabled={isSubmitting}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>

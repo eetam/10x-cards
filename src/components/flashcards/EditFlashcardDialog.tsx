@@ -55,7 +55,9 @@ export function EditFlashcardDialog({ open, onOpenChange, flashcard, onSuccess }
           submitLabel="Zapisz zmiany"
           onCancel={() => onOpenChange(false)}
         />
-        {mutation.isError && <p className="text-sm text-destructive mt-2">Wystąpił błąd podczas zapisywania zmian. Spróbuj ponownie.</p>}
+        {mutation.isError && (
+          <p className="text-sm text-destructive mt-2">Wystąpił błąd podczas zapisywania zmian. Spróbuj ponownie.</p>
+        )}
       </DialogContent>
     </Dialog>
   );

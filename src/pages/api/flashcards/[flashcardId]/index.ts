@@ -38,10 +38,6 @@ export const GET: APIRoute = async ({ request, locals, params }) => {
 
     if (defaultUserId) {
       userId = defaultUserId;
-      if (import.meta.env.NODE_ENV === "development") {
-        // eslint-disable-next-line no-console
-        console.log(`Using default user ID for testing: ${userId}`);
-      }
     } else {
       // Normal authentication flow
       const authHeader = request.headers.get("authorization");
@@ -121,12 +117,6 @@ export const GET: APIRoute = async ({ request, locals, params }) => {
     return ResponseUtils.createSuccessResponse(responseData, 200);
   } catch (error) {
     // Log error for debugging in development
-    if (import.meta.env.NODE_ENV === "development" && error instanceof Error) {
-      // eslint-disable-next-line no-console
-      console.error("Error in GET /api/flashcards/[flashcardId]:", error.message);
-      // eslint-disable-next-line no-console
-      console.error(error.stack);
-    }
     return ResponseUtils.createInternalErrorResponse();
   }
 };
@@ -152,10 +142,6 @@ export const PUT: APIRoute = async ({ request, locals, params }) => {
 
     if (defaultUserId) {
       userId = defaultUserId;
-      if (import.meta.env.NODE_ENV === "development") {
-        // eslint-disable-next-line no-console
-        console.log(`Using default user ID for testing: ${userId}`);
-      }
     } else {
       // Normal authentication flow
       const authHeader = request.headers.get("authorization");
@@ -290,12 +276,6 @@ export const PUT: APIRoute = async ({ request, locals, params }) => {
     return ResponseUtils.createSuccessResponse(responseData, 200);
   } catch (error) {
     // Log error for debugging in development
-    if (import.meta.env.NODE_ENV === "development" && error instanceof Error) {
-      // eslint-disable-next-line no-console
-      console.error("Error in PUT /api/flashcards/[flashcardId]:", error.message);
-      // eslint-disable-next-line no-console
-      console.error(error.stack);
-    }
     return ResponseUtils.createInternalErrorResponse();
   }
 };
@@ -320,10 +300,6 @@ export const DELETE: APIRoute = async ({ request, locals, params }) => {
 
     if (defaultUserId) {
       userId = defaultUserId;
-      if (import.meta.env.NODE_ENV === "development") {
-        // eslint-disable-next-line no-console
-        console.log(`Using default user ID for testing: ${userId}`);
-      }
     } else {
       // Normal authentication flow
       const authHeader = request.headers.get("authorization");
@@ -386,12 +362,6 @@ export const DELETE: APIRoute = async ({ request, locals, params }) => {
     return ResponseUtils.createSuccessResponse({ message: "Flashcard deleted successfully" }, 200);
   } catch (error) {
     // Log error for debugging in development
-    if (import.meta.env.NODE_ENV === "development" && error instanceof Error) {
-      // eslint-disable-next-line no-console
-      console.error("Error in DELETE /api/flashcards/[flashcardId]:", error.message);
-      // eslint-disable-next-line no-console
-      console.error(error.stack);
-    }
     return ResponseUtils.createInternalErrorResponse();
   }
 };

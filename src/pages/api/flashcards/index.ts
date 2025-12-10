@@ -83,9 +83,6 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
     if (defaultUserId) {
       userId = defaultUserId;
-      if (import.meta.env.NODE_ENV === "development") {
-        console.log(`Using default user ID for testing: ${userId}`);
-      }
     } else {
       // Normal authentication flow
       const authHeader = request.headers.get("authorization");
@@ -186,10 +183,8 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
       // Log error but don't fail the request - metrics update is non-critical
       if (metricsError) {
-        if (import.meta.env.NODE_ENV === "development") {
-          console.error("Failed to update generation metrics:", metricsError.message);
-        }
         // Continue with response - flashcard was created successfully
+        // Metrics update failure is non-critical
       }
     }
 
@@ -218,11 +213,6 @@ export const POST: APIRoute = async ({ request, locals }) => {
     // Step 8: Return success response
     return ResponseUtils.createSuccessResponse(response, 201);
   } catch (error) {
-    // Log error for debugging in development
-    if (import.meta.env.NODE_ENV === "development" && error instanceof Error) {
-      console.error("Error in POST /api/flashcards:", error.message);
-      console.error(error.stack);
-    }
     return ResponseUtils.createInternalErrorResponse();
   }
 };
@@ -246,9 +236,6 @@ export const GET: APIRoute = async ({ request, locals }) => {
 
     if (defaultUserId) {
       userId = defaultUserId;
-      if (import.meta.env.NODE_ENV === "development") {
-        console.log(`Using default user ID for testing: ${userId}`);
-      }
     } else {
       // Normal authentication flow
       const authHeader = request.headers.get("authorization");
@@ -331,11 +318,6 @@ export const GET: APIRoute = async ({ request, locals }) => {
     // Step 6: Return success response
     return ResponseUtils.createSuccessResponse(response, 200);
   } catch (error) {
-    // Log error for debugging in development
-    if (import.meta.env.NODE_ENV === "development" && error instanceof Error) {
-      console.error("Error in GET /api/flashcards:", error.message);
-      console.error(error.stack);
-    }
     return ResponseUtils.createInternalErrorResponse();
   }
 };

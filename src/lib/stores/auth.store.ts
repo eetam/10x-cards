@@ -76,9 +76,6 @@ export const useAuthStore = create<AuthState>((set) => ({
         }
       } catch (apiError) {
         // If API call fails, fall back to Supabase client
-        if (typeof window !== "undefined" && import.meta.env.DEV) {
-          console.log("[Auth] API session check failed, falling back to Supabase:", apiError);
-        }
       }
 
       // If Supabase client is available, use it directly

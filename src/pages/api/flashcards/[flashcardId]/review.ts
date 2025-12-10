@@ -40,9 +40,6 @@ export const POST: APIRoute = async ({ request, locals, params }) => {
 
     if (defaultUserId) {
       userId = defaultUserId;
-      if (import.meta.env.DEV) {
-        console.log(`Using default user ID for testing: ${userId}`);
-      }
     } else {
       // Normal authentication flow
       const authHeader = request.headers.get("authorization");
@@ -126,11 +123,6 @@ export const POST: APIRoute = async ({ request, locals, params }) => {
 
     return ResponseUtils.createSuccessResponse(response);
   } catch (error) {
-    // Log error for debugging in development
-    if (import.meta.env.DEV && error instanceof Error) {
-      console.error("Error in POST /api/flashcards/[flashcardId]/review:", error.message);
-      console.error(error.stack);
-    }
     return ResponseUtils.createInternalErrorResponse();
   }
 };

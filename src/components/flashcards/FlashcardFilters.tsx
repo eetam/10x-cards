@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
+import { ArrowUp, ArrowDown } from "lucide-react";
 import { Button } from "../ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import { Label } from "../ui/label";
@@ -107,7 +107,12 @@ export function FlashcardFilters({ filters, onFiltersChange }: FlashcardFiltersP
       </div>
 
       {/* Order toggle */}
-      <Button variant="outline" size="icon" onClick={handleOrderToggle} title={filters.order === "asc" ? "Rosnąco" : "Malejąco"}>
+      <Button
+        variant="outline"
+        size="icon"
+        onClick={handleOrderToggle}
+        title={filters.order === "asc" ? "Rosnąco" : "Malejąco"}
+      >
         {filters.order === "asc" ? <ArrowUp className="size-4" /> : <ArrowDown className="size-4" />}
       </Button>
     </div>

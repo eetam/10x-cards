@@ -68,7 +68,6 @@ export function EditProposalDialog({
       onOpenChange(false);
     } catch (error) {
       // Error handling is done in parent component
-      console.error("Error saving proposal:", error);
     } finally {
       setIsSaving(false);
     }
