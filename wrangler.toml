@@ -6,18 +6,19 @@ compatibility_flags = ["nodejs_compat"]
 # This tells Wrangler where to find the built static assets
 pages_build_output_dir = "dist"
 
-# Environment variables must be set in Cloudflare Pages dashboard:
-# Settings > Environment Variables > Add variable
-# Mark sensitive variables (OPENROUTER_API_KEY, SUPABASE_KEY) as "Secret"
-# Required variables:
-#   - OPENROUTER_API_KEY (Secret)
-#   - SUPABASE_URL
-#   - SUPABASE_KEY (Secret)
-# Optional variables:
-#   - OPENROUTER_USE_MOCK
-#   - DEFAULT_USER_ID
-#   - PUBLIC_SUPABASE_URL
-#   - PUBLIC_SUPABASE_KEY
+# Environment variables configuration
+# Non-secret variables are defined here in [vars] section
+# Secret variables (OPENROUTER_API_KEY, SUPABASE_KEY) must be set in Cloudflare Pages dashboard:
+# Settings > Environment Variables > Add variable > Mark as "Secret"
+[vars]
+# Supabase project URL
+SUPABASE_URL = "https://lwqcjfvqgemdklntqiia.supabase.co"
+
+# Optional variables (uncomment and set if needed):
+# OPENROUTER_USE_MOCK = "false"
+# DEFAULT_USER_ID = ""
+PUBLIC_SUPABASE_URL = "https://lwqcjfvqgemdklntqiia.supabase.co"
+# PUBLIC_SUPABASE_KEY = "YOUR_SUPABASE_ANON_KEY_HERE"
 
 # KV namespace for sessions (required by @astrojs/cloudflare adapter)
 [[kv_namespaces]]
