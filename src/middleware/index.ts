@@ -1,8 +1,10 @@
 import type { MiddlewareResponseHandler } from "astro";
 
-import { getSupabaseClient, supabaseClient } from "../db/supabase.client.ts";
+import { supabaseClient } from "../db/supabase.client.ts";
 import { AuthUtils } from "../lib/utils/auth.utils";
 import { EnvConfig } from "../lib/config/env.config";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Database } from "../db/database.types.ts";
 
 /**
  * List of protected routes that require authentication
@@ -34,9 +36,10 @@ function getTokenFromRequest(request: Request): string | null {
 }
 
 export const onRequest: MiddlewareResponseHandler = async (context, next) => {
-  // Set Supabase client in locals (use supabaseClient directly, not getSupabaseClient)
+  // Set Supabase client in locals (use supabaseClient directly)
   // supabaseClient will be null if environment variables are not available, but won't throw
-  context.locals.supabase = supabaseClient as any;
+  // API routes should handle null Supabase client gracefully
+  context.locals.supabase = (supabaseClient as SupabaseClient<Database>) || null;
 
   const url = new URL(context.request.url);
 

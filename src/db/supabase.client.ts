@@ -17,15 +17,12 @@ if (supabaseUrl && supabaseKey) {
   // Log warning instead of throwing error to allow app to load
   // The error will be caught when trying to use the client
   if (typeof console !== "undefined" && import.meta.env.DEV) {
-    console.warn(
-      "Supabase client not initialized. Missing environment variables:",
-      {
-        hasUrl: !!supabaseUrl,
-        hasKey: !!supabaseKey,
-        url: supabaseUrl || "missing",
-        key: supabaseKey ? "***" : "missing",
-      }
-    );
+    console.warn("Supabase client not initialized. Missing environment variables:", {
+      hasUrl: !!supabaseUrl,
+      hasKey: !!supabaseKey,
+      url: supabaseUrl || "missing",
+      key: supabaseKey ? "***" : "missing",
+    });
   }
 }
 
