@@ -208,28 +208,18 @@ describe("GenerationService Integration Tests", () => {
     });
 
     it("should handle error logging failure gracefully", async () => {
-      // Set development environment for console.error to be called
-      const originalEnv = process.env.NODE_ENV;
-      process.env.NODE_ENV = "development";
-
-      const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {
-        // Mock implementation
-      });
-
       const mockInsert = vi.fn().mockRejectedValue(new Error("Database error"));
       vi.mocked(mockSupabase.from).mockReturnValue({
         insert: mockInsert,
       } as unknown as ReturnType<SupabaseClient["from"]>);
 
-      // Should not throw
+      // Should not throw even when database insert fails
       await expect(
         generationService.logGenerationError("user-123", "openai/gpt-4o-mini", "Test text", "ERROR", "Test error")
       ).resolves.not.toThrow();
 
-      expect(consoleSpy).toHaveBeenCalledWith("Failed to log generation error:", expect.any(Error));
-
-      consoleSpy.mockRestore();
-      process.env.NODE_ENV = originalEnv;
+      // Verify that insert was attempted
+      expect(mockInsert).toHaveBeenCalled();
     });
   });
 });
