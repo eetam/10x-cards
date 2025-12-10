@@ -2,6 +2,9 @@ name = "10x-cards"
 compatibility_date = "2025-12-10"
 compatibility_flags = ["nodejs_compat"]
 
+# Account ID from Cloudflare (required for Pages deployment)
+account_id = "c32df15d41893c05d3cb680045e154b9"
+
 # For Cloudflare Pages deployment (required for Astro Cloudflare adapter)
 # This tells Wrangler where to find the built static assets
 pages_build_output_dir = "dist"
