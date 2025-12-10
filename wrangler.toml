@@ -4,11 +4,8 @@ compatibility_flags = ["nodejs_compat"]
 
 # Entry point for Astro Cloudflare adapter
 # Astro builds the server entry point to dist/server/entry.mjs
+# Assets are automatically handled by the adapter
 main = "./dist/server/entry.mjs"
-
-# Assets directory for static files (client-side assets)
-[site]
-directory = "./dist/client"
 
 # KV namespace for sessions (required by @astrojs/cloudflare adapter)
 # Wrangler will automatically create the namespace on first deploy if id is not specified
