@@ -6,9 +6,10 @@ interface NavLinkProps {
   href: string;
   children: React.ReactNode;
   className?: string;
+  onClick?: () => void;
 }
 
-export function NavLink({ href, children, className }: NavLinkProps) {
+export function NavLink({ href, children, className, onClick }: NavLinkProps) {
   const [isActive, setIsActive] = useState(false);
 
   useEffect(() => {
@@ -30,10 +31,12 @@ export function NavLink({ href, children, className }: NavLinkProps) {
   return (
     <a
       href={href}
+      onClick={onClick}
       className={cn(
         buttonVariants({ variant: "ghost", size: "sm" }),
         "relative",
-        isActive && "text-primary after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-primary",
+        isActive &&
+          "text-primary after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-primary",
         "hover:text-primary/80",
         className
       )}
