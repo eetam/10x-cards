@@ -5,7 +5,13 @@ import type { Database } from "../db/database.types.ts";
 // Use PUBLIC_ variables (available on both server and client in Astro)
 // Fallback to non-prefixed variables for backward compatibility
 const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL || import.meta.env.SUPABASE_URL;
-const supabaseKey = import.meta.env.PUBLIC_SUPABASE_KEY || import.meta.env.SUPABASE_KEY;
+
+// When DEFAULT_USER_ID is set (dev/test mode), use service_role key to bypass RLS
+// Otherwise use anon key for normal authentication flow
+const defaultUserId = import.meta.env.DEFAULT_USER_ID;
+const supabaseKey = defaultUserId
+  ? import.meta.env.SUPABASE_SERVICE_ROLE_KEY || import.meta.env.SUPABASE_KEY
+  : import.meta.env.PUBLIC_SUPABASE_KEY || import.meta.env.SUPABASE_KEY;
 
 // Create Supabase client only if both URL and key are available
 // This prevents errors during module import if variables are not yet available

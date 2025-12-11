@@ -41,7 +41,13 @@ export default defineConfig({
       }),
       SUPABASE_KEY: envField.string({
         context: "server",
-        access: "public",
+        access: "secret",
+        optional: true,
+      }),
+      // Service role key - bypasses RLS, used when DEFAULT_USER_ID is set
+      SUPABASE_SERVICE_ROLE_KEY: envField.string({
+        context: "server",
+        access: "secret",
         optional: true,
       }),
       OPENROUTER_API_KEY: envField.string({

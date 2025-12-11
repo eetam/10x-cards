@@ -8,8 +8,13 @@ pages_build_output_dir = "dist"
 
 # Environment variables configuration
 # Non-secret variables are defined here in [vars] section
-# Secret variables (OPENROUTER_API_KEY, SUPABASE_KEY) must be set in Cloudflare Pages dashboard:
-# Settings > Environment Variables > Add variable > Mark as "Secret"
+# Secret variables must be set in Cloudflare Pages dashboard:
+# Settings > Environment Variables > Add variable > Mark as "Encrypt"
+#
+# Required secrets:
+# - SUPABASE_KEY (anon key)
+# - SUPABASE_SERVICE_ROLE_KEY (service role key - bypasses RLS when DEFAULT_USER_ID is set)
+# - OPENROUTER_API_KEY (for AI generation)
 [vars]
 # Supabase project URL
 SUPABASE_URL = "https://lwqcjfvqgemdklntqiia.supabase.co"
