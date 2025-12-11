@@ -29,12 +29,7 @@ export function MobileNav() {
         <DialogContent className="sm:max-w-md">
           <nav className="flex flex-col gap-2 mt-4">
             {navigationItems.map((item) => (
-              <NavLink
-                key={item.href}
-                href={item.href}
-                className="w-full justify-start py-3"
-                onClick={handleNavClick}
-              >
+              <NavLink key={item.href} href={item.href} className="w-full justify-start py-3" onClick={handleNavClick}>
                 {item.label}
               </NavLink>
             ))}
