@@ -14,9 +14,11 @@ pages_build_output_dir = "dist"
 # Supabase project URL
 SUPABASE_URL = "https://lwqcjfvqgemdklntqiia.supabase.co"
 
+# Default user ID for development/testing (bypasses authentication)
+DEFAULT_USER_ID = "5a3e0f7e-ac4f-498d-b625-aa6dc1ac36be"
+
 # Optional variables (uncomment and set if needed):
 # OPENROUTER_USE_MOCK = "false"
-# DEFAULT_USER_ID = ""
 PUBLIC_SUPABASE_URL = "https://lwqcjfvqgemdklntqiia.supabase.co"
 # PUBLIC_SUPABASE_KEY = "YOUR_SUPABASE_ANON_KEY_HERE"
 
