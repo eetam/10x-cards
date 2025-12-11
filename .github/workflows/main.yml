@@ -92,6 +92,11 @@ jobs:
       - name: Setup Node.js and install dependencies
         uses: ./.github/actions/setup-node
 
+      - name: Verify Cloudflare credentials
+        run: |
+          echo "Checking Cloudflare authentication..."
+          npx wrangler whoami --api-token="${{ secrets.CLOUDFLARE_API_TOKEN }}"
+
       - name: Build project for production
         run: npm run build
 
