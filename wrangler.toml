@@ -1,6 +1,6 @@
 name = "10x-cards"
 compatibility_date = "2025-11-18"
-compatibility_flags = ["nodejs_compat"]
+compatibility_flags = ["nodejs_compat", "disable_nodejs_process_v2"]
 
 # For Cloudflare Pages deployment (required for Astro Cloudflare adapter)
 # This tells Wrangler where to find the built static assets
