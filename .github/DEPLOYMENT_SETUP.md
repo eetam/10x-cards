@@ -17,34 +17,31 @@ This document explains the CI/CD pipeline for the 10x-cards project.
   3. **Deploy** - Deploy to Cloudflare Pages after CI and migrations pass
 - **Purpose:** Validate, migrate, and deploy production code
 
-## Required GitHub Secrets
+## GitHub Configuration
 
-You need to configure the following secrets in your GitHub repository:
-**Settings → Secrets and variables → Actions → New repository secret**
+### Required Secrets
+Configure these in **Settings → Secrets and variables → Actions → Secrets tab**
 
-### Supabase Secrets
-- `SUPABASE_URL` - Your Supabase project URL
-- `SUPABASE_KEY` - Supabase anon key
-- `SUPABASE_SERVICE_ROLE_KEY` - Service role key (for migrations)
-- `SUPABASE_PROJECT_REF` - Supabase project reference ID
-- `SUPABASE_ACCESS_TOKEN` - Supabase access token for CLI
-- `PUBLIC_SUPABASE_URL` - Public Supabase URL (usually same as SUPABASE_URL)
-- `PUBLIC_SUPABASE_KEY` - Public Supabase anon key
+These are **sensitive** values that should never be exposed publicly:
 
-### Cloudflare Secrets
-- `CLOUDFLARE_API_TOKEN` - Cloudflare API token with Pages deployment permissions
+- `SUPABASE_KEY` - Supabase legacy anon key (optional for backward compatibility)
+- `SUPABASE_SERVICE_ROLE_KEY` - Service role key (bypasses RLS when DEFAULT_USER_ID is set)
+- `SUPABASE_ACCESS_TOKEN` - Supabase personal access token for CLI migrations
+- `CLOUDFLARE_API_TOKEN` - Cloudflare API token with **Cloudflare Pages:Edit** permission
 - `CLOUDFLARE_ACCOUNT_ID` - Your Cloudflare account ID
-
-### Other Secrets
 - `OPENROUTER_API_KEY` - OpenRouter API key for AI features
 
-## GitHub Variables
+### Required Variables
+Configure these in **Settings → Secrets and variables → Actions → Variables tab**
 
-Configure these as repository variables:
-**Settings → Secrets and variables → Actions → Variables tab**
+These are **public** values (safe to expose, similar to [wrangler.toml](../../wrangler.toml)):
 
-- `OPENROUTER_USE_MOCK` - Set to "true" for testing without real API calls
-- `DEFAULT_USER_ID` - Default user ID for development/testing
+- `SUPABASE_URL` - Your Supabase project URL (e.g., `https://xxx.supabase.co`)
+- `SUPABASE_PROJECT_REF` - Supabase project reference ID (e.g., `lwqcjfvqgemdklntqiia`)
+- `PUBLIC_SUPABASE_URL` - Public Supabase URL (same as SUPABASE_URL)
+- `PUBLIC_SUPABASE_KEY` - Supabase publishable key (starts with `sb_publishable_...`)
+- `DEFAULT_USER_ID` - Default user ID for development/testing (UUID format)
+- `OPENROUTER_USE_MOCK` - Set to `"false"` for production, `"true"` for testing
 
 ## How to Get Cloudflare Credentials
 
@@ -55,12 +52,16 @@ Configure these as repository variables:
 
 ### 2. Create API Token
 1. Go to [API Tokens](https://dash.cloudflare.com/profile/api-tokens)
-2. Click **Create Token**
-3. Use the **"Edit Cloudflare Workers"** template or create a custom token with:
-   - **Account** → **Cloudflare Pages** → **Edit**
-4. Click **Continue to summary** → **Create Token**
-5. Copy the token (you won't be able to see it again!)
-6. Add it to GitHub secrets as `CLOUDFLARE_API_TOKEN`
+2. Click **Create Token** → **Create Custom Token**
+3. Give it a name (e.g., "GitHub Actions Pages Deploy")
+4. **Permissions** - Add:
+   - **Account** → **Cloudflare Pages** → **Edit** ⚠️ (REQUIRED!)
+5. **Account Resources** - Set to your specific account
+6. Click **Continue to summary** → **Create Token**
+7. Copy the token (you won't be able to see it again!)
+8. Add it to GitHub secrets as `CLOUDFLARE_API_TOKEN`
+
+> **Note:** The "Edit Cloudflare Workers" template does NOT include Pages permissions. You must create a custom token with **Cloudflare Pages:Edit**.
 
 ### 3. Get Supabase Access Token
 1. Go to [Supabase Dashboard](https://supabase.com/dashboard)
@@ -69,40 +70,42 @@ Configure these as repository variables:
 4. Give it a name (e.g., "GitHub Actions")
 5. Copy the token and add it to GitHub secrets as `SUPABASE_ACCESS_TOKEN`
 
-### 4. Get Supabase Project Reference
+### 4. Get Supabase Project Reference and Publishable Key
 1. Go to your Supabase project dashboard
-2. Go to **Settings** → **General**
-3. Copy the **Reference ID** (format: `abcdefghijklmno`)
-4. Add it to GitHub secrets as `SUPABASE_PROJECT_REF`
+2. **For Project Reference:**
+   - Go to **Settings** → **General**
+   - Copy the **Reference ID** (format: `lwqcjfvqgemdklntqiia`)
+   - Add it to GitHub **Variables** (not Secrets) as `SUPABASE_PROJECT_REF`
+3. **For Publishable Key:**
+   - Go to **Settings** → **API**
+   - Under "Project API keys", find **Publishable key** (starts with `sb_publishable_...`)
+   - Copy it and add to GitHub **Variables** as `PUBLIC_SUPABASE_KEY`
 
 ## Cloudflare Pages Configuration
 
-### Option A: Manual Deployment via GitHub Actions (Recommended)
-This is what the new workflow uses. You need to:
+### Deployment Method
+This setup uses **GitHub Actions for deployment** (not Cloudflare's automatic integration).
 
-1. **Disable automatic deployments** in Cloudflare Pages (if they're enabled):
-   - Go to Cloudflare Dashboard → **Workers & Pages**
-   - Select your project **10x-cards**
+**Why?** This ensures deployments wait for CI checks and migrations to complete before going live.
+
+### Setup Steps
+
+1. **Disable automatic deployments** in Cloudflare Pages:
+   - Go to Cloudflare Dashboard → **Workers & Pages** → **10x-cards**
    - Go to **Settings** → **Builds & deployments**
-   - Disable **Automatic deployments** from GitHub
+   - Disable **"Automatic deployments"** from GitHub
 
 2. **Configure environment variables** in Cloudflare Pages:
-   - Go to **Settings** → **Environment variables**
-   - Add the same variables from [wrangler.toml](../../wrangler.toml):
-     - `SUPABASE_URL`
-     - `SUPABASE_KEY`
-     - `SUPABASE_SERVICE_ROLE_KEY`
-     - `DEFAULT_USER_ID`
-     - `OPENROUTER_API_KEY`
-     - `PUBLIC_SUPABASE_URL`
-     - `PUBLIC_SUPABASE_KEY`
-   - Mark secrets as **"Encrypt"**
 
-### Option B: Automatic Deployment via Cloudflare (Not Recommended)
-If you keep Cloudflare's automatic GitHub integration enabled:
-- Deployments will start immediately on push to `main`
-- They won't wait for migrations to complete
-- This can cause issues if your app depends on new database schema
+   Only **secrets** need to be added manually (public values come from [wrangler.toml](../../wrangler.toml)):
+
+   - Go to **Settings** → **Environment variables** → **Production** tab
+   - Add these **secrets** and mark as **"Encrypt"**:
+     - `SUPABASE_SERVICE_ROLE_KEY` - Service role key from Supabase Dashboard → Settings → API
+     - `SUPABASE_KEY` - Legacy anon key (optional, for backward compatibility)
+     - `OPENROUTER_API_KEY` - OpenRouter API key
+
+   > **Note:** Public values (`SUPABASE_URL`, `PUBLIC_SUPABASE_URL`, `PUBLIC_SUPABASE_KEY`, `DEFAULT_USER_ID`, `OPENROUTER_USE_MOCK`) are defined in [wrangler.toml](../../wrangler.toml) and automatically used by Cloudflare Pages. **Do NOT add them manually** in Cloudflare Dashboard.
 
 ## How the Workflow Works
 
@@ -225,3 +228,41 @@ If deployment breaks production:
    - Never commit secrets to the repository
    - Rotate tokens periodically
    - Use environment-specific secrets if needed
+
+## Quick Reference: Configuration Checklist
+
+### ✅ GitHub Repository Secrets (6 items)
+- [ ] `SUPABASE_KEY` (legacy anon key - optional)
+- [ ] `SUPABASE_SERVICE_ROLE_KEY` (required!)
+- [ ] `SUPABASE_ACCESS_TOKEN` (for migrations)
+- [ ] `CLOUDFLARE_API_TOKEN` (must have Pages:Edit permission)
+- [ ] `CLOUDFLARE_ACCOUNT_ID`
+- [ ] `OPENROUTER_API_KEY`
+
+### ✅ GitHub Repository Variables (6 items)
+- [ ] `SUPABASE_URL`
+- [ ] `SUPABASE_PROJECT_REF`
+- [ ] `PUBLIC_SUPABASE_URL`
+- [ ] `PUBLIC_SUPABASE_KEY` (publishable key, starts with `sb_publishable_...`)
+- [ ] `DEFAULT_USER_ID`
+- [ ] `OPENROUTER_USE_MOCK` (set to `"false"` for production)
+
+### ✅ Cloudflare Pages Environment Variables (3 secrets only)
+- [ ] `SUPABASE_SERVICE_ROLE_KEY` (Encrypt)
+- [ ] `SUPABASE_KEY` (Encrypt - optional)
+- [ ] `OPENROUTER_API_KEY` (Encrypt)
+
+### ✅ Cloudflare Pages Settings
+- [ ] Automatic deployments from GitHub: **Disabled**
+
+### ✅ Files Already Configured
+- [x] [wrangler.toml](../../wrangler.toml) - Public environment variables
+- [x] [.github/workflows/main.yml](.github/workflows/main.yml) - Main branch CI/CD
+- [x] [.github/workflows/feature.yml](.github/workflows/feature.yml) - Feature branch CI
+
+---
+
+**After configuration, test the workflow:**
+1. Go to **Actions** → **CI/CD - Main Branch** → **Run workflow**
+2. Verify all jobs pass (CI Checks, Database Migrations, Deploy)
+3. Check your deployed site at Cloudflare Pages
