@@ -1,0 +1,103 @@
+name: CI/CD - Main Branch
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  # Job 1: Run CI checks (lint, test, build)
+  ci-checks:
+    name: CI Checks
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+      OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+      OPENROUTER_USE_MOCK: ${{ vars.OPENROUTER_USE_MOCK }}
+      DEFAULT_USER_ID: ${{ vars.DEFAULT_USER_ID }}
+      PUBLIC_SUPABASE_URL: ${{ secrets.PUBLIC_SUPABASE_URL }}
+      PUBLIC_SUPABASE_KEY: ${{ secrets.PUBLIC_SUPABASE_KEY }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js and install dependencies
+        uses: ./.github/actions/setup-node
+
+      - name: Run CI steps (lint, test, build)
+        uses: ./.github/actions/ci-steps
+
+  # Job 2: Run database migrations (only if migration files changed)
+  migrate:
+    name: Database Migrations
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    # Check if there are changes in migration files
+    if: |
+      github.event_name == 'workflow_dispatch' ||
+      contains(github.event.head_commit.modified, 'supabase/migrations/') ||
+      contains(github.event.head_commit.added, 'supabase/migrations/')
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Link Supabase project
+        run: supabase link --project-ref ${{ secrets.SUPABASE_PROJECT_REF }}
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+
+      - name: Run migrations
+        run: supabase db push
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+
+  # Job 3: Deploy to Cloudflare Pages (only after CI and migrations pass)
+  deploy:
+    name: Deploy to Cloudflare Pages
+    runs-on: ubuntu-latest
+    needs: [ci-checks, migrate]
+    # Run even if migrate job was skipped (but not if it failed)
+    if: |
+      always() &&
+      needs.ci-checks.result == 'success' &&
+      (needs.migrate.result == 'success' || needs.migrate.result == 'skipped')
+    permissions:
+      contents: read
+      deployments: write
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+      OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+      OPENROUTER_USE_MOCK: ${{ vars.OPENROUTER_USE_MOCK }}
+      DEFAULT_USER_ID: ${{ vars.DEFAULT_USER_ID }}
+      PUBLIC_SUPABASE_URL: ${{ secrets.PUBLIC_SUPABASE_URL }}
+      PUBLIC_SUPABASE_KEY: ${{ secrets.PUBLIC_SUPABASE_KEY }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js and install dependencies
+        uses: ./.github/actions/setup-node
+
+      - name: Build project for production
+        run: npm run build
+
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy dist --project-name=10x-cards --commit-dirty=true

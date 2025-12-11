@@ -11,21 +11,21 @@ pages_build_output_dir = "dist"
 # Secret variables must be set in Cloudflare Pages dashboard:
 # Settings > Environment Variables > Add variable > Mark as "Encrypt"
 #
-# Required secrets:
-# - SUPABASE_KEY (anon key)
+# Required secrets (set in Cloudflare Pages Dashboard):
+# - SUPABASE_KEY (legacy anon key - optional for backward compatibility)
 # - SUPABASE_SERVICE_ROLE_KEY (service role key - bypasses RLS when DEFAULT_USER_ID is set)
 # - OPENROUTER_API_KEY (for AI generation)
 [vars]
-# Supabase project URL
+# Supabase configuration
 SUPABASE_URL = "https://lwqcjfvqgemdklntqiia.supabase.co"
+PUBLIC_SUPABASE_URL = "https://lwqcjfvqgemdklntqiia.supabase.co"
+PUBLIC_SUPABASE_KEY = "sb_publishable_pHiMfUr2kRVXwSj09bUujw_LIffiXY6"
 
 # Default user ID for development/testing (bypasses authentication)
 DEFAULT_USER_ID = "5a3e0f7e-ac4f-498d-b625-aa6dc1ac36be"
 
-# Optional variables (uncomment and set if needed):
-# OPENROUTER_USE_MOCK = "false"
-PUBLIC_SUPABASE_URL = "https://lwqcjfvqgemdklntqiia.supabase.co"
-# PUBLIC_SUPABASE_KEY = "YOUR_SUPABASE_ANON_KEY_HERE"
+# OpenRouter configuration
+OPENROUTER_USE_MOCK = "false"
 
 # KV namespace for sessions (required by @astrojs/cloudflare adapter)
 [[kv_namespaces]]

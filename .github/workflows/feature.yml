@@ -16,13 +16,15 @@ jobs:
     permissions:
       contents: read
     env:
-      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-      SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
-      OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
-      OPENROUTER_USE_MOCK: ${{ vars.OPENROUTER_USE_MOCK }}
-      DEFAULT_USER_ID: ${{ vars.DEFAULT_USER_ID }}
-      PUBLIC_SUPABASE_URL: ${{ secrets.PUBLIC_SUPABASE_URL }}
-      PUBLIC_SUPABASE_KEY: ${{ secrets.PUBLIC_SUPABASE_KEY }}
+      # Mock/dummy values for feature branches - NOT production secrets!
+      # This ensures builds/tests don't touch production resources
+      SUPABASE_URL: "https://dummy-project.supabase.co"
+      SUPABASE_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJkdW1teSIsInJvbGUiOiJhbm9uIn0.dummy"
+      OPENROUTER_API_KEY: "sk-or-v1-dummy-key-for-ci-testing"
+      OPENROUTER_USE_MOCK: "true"
+      DEFAULT_USER_ID: "00000000-0000-0000-0000-000000000000"
+      PUBLIC_SUPABASE_URL: "https://dummy-project.supabase.co"
+      PUBLIC_SUPABASE_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJkdW1teSIsInJvbGUiOiJhbm9uIn0.dummy"
 
     steps:
       - name: Checkout repository
