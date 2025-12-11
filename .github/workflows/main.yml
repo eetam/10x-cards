@@ -32,17 +32,22 @@ jobs:
       - name: Run CI steps (lint, test, build)
         uses: ./.github/actions/ci-steps
 
-  # Job 2: Run database migrations (only if migration files changed)
+  # Job 2: Run database migrations
   migrate:
     name: Database Migrations
     runs-on: ubuntu-latest
     permissions:
       contents: read
-    # Check if there are changes in migration files
+    # Run migrations when:
+    # - Manually triggered (workflow_dispatch)
+    # - Migration files were modified or added
+    # - First deployment (no head_commit)
     if: |
       github.event_name == 'workflow_dispatch' ||
-      contains(github.event.head_commit.modified, 'supabase/migrations/') ||
-      contains(github.event.head_commit.added, 'supabase/migrations/')
+      (github.event.head_commit && (
+        contains(github.event.head_commit.modified, 'supabase/migrations/') ||
+        contains(github.event.head_commit.added, 'supabase/migrations/')
+      ))
 
     steps:
       - name: Checkout repository
@@ -95,7 +100,9 @@ jobs:
       - name: Verify Cloudflare credentials
         run: |
           echo "Checking Cloudflare authentication..."
-          npx wrangler whoami --api-token="${{ secrets.CLOUDFLARE_API_TOKEN }}"
+          npx wrangler whoami
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
 
       - name: Build project for production
         run: npm run build
