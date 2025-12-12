@@ -1,5 +1,4 @@
 import type { APIRoute } from "astro";
-import { EnvConfig } from "../../../lib/config/env.config";
 import { ResponseUtils } from "../../../lib/utils/response.utils";
 import { AuthUtils } from "../../../lib/utils/auth.utils";
 
@@ -10,7 +9,7 @@ export const prerender = false;
  * GET /api/auth/session
  *
  * Returns current user session information.
- * Uses DEFAULT_USER_ID if set, otherwise checks JWT token.
+ * Checks JWT token from Authorization header or Supabase session.
  *
  * @param request - The incoming HTTP request
  * @param locals - Astro locals containing Supabase client
@@ -18,21 +17,7 @@ export const prerender = false;
  */
 export const GET: APIRoute = async ({ request, locals }) => {
   try {
-    // Check for DEFAULT_USER_ID first (for testing/development)
-    const defaultUserId = EnvConfig.getDefaultUserId();
-
-    if (defaultUserId) {
-      // Return mock user info when DEFAULT_USER_ID is set
-      return ResponseUtils.createSuccessResponse({
-        user: {
-          id: defaultUserId,
-          email: `test-${defaultUserId}@example.com`,
-        },
-        isAuthenticated: true,
-      });
-    }
-
-    // Normal authentication flow - check JWT token
+    // Check JWT token from Authorization header
     const authHeader = request.headers.get("authorization");
     const token = AuthUtils.extractBearerToken(authHeader);
 

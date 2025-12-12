@@ -45,7 +45,7 @@ export const useAuthStore = create<AuthState>((set) => ({
     try {
       set({ isLoading: true, error: null });
 
-      // First, try to get session from API endpoint (works with DEFAULT_USER_ID on server)
+      // First, try to get session from API endpoint
       try {
         const sessionData = await getAuthSession();
 
