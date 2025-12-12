@@ -21,8 +21,7 @@ export function useAuth() {
         }
       });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Empty deps - run only once on mount
+  }, [initialize]); // Initialize is stable from Zustand store
 
   return {
     user,

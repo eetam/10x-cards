@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { loginSchema, type LoginFormData } from "../../lib/validation/auth.schema";
@@ -16,6 +16,7 @@ import { Loader2 } from "lucide-react";
 export function LoginForm() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [redirectTo, setRedirectTo] = useState<string | null>(null);
   const login = useAuthStore((state) => state.login);
 
   const {
@@ -25,6 +26,13 @@ export function LoginForm() {
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
   });
+
+  // Handle redirect after successful login
+  useEffect(() => {
+    if (redirectTo) {
+      window.location.href = redirectTo;
+    }
+  }, [redirectTo]);
 
   const onSubmit = async (data: LoginFormData) => {
     setIsSubmitting(true);
@@ -37,8 +45,8 @@ export function LoginForm() {
       const urlParams = new URLSearchParams(window.location.search);
       const redirect = urlParams.get("redirect") || "/";
 
-      // Redirect after successful login
-      window.location.href = redirect;
+      // Trigger redirect via state
+      setRedirectTo(redirect);
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : "Logowanie nie powiodło się");
       setIsSubmitting(false);

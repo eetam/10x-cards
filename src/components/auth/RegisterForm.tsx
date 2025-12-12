@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { registerSchema, type RegisterFormData } from "../../lib/validation/auth.schema";
@@ -19,6 +19,7 @@ export function RegisterForm() {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [requiresEmailConfirmation, setRequiresEmailConfirmation] = useState(false);
+  const [shouldRedirect, setShouldRedirect] = useState(false);
   const register = useAuthStore((state) => state.register);
 
   const {
@@ -28,6 +29,16 @@ export function RegisterForm() {
   } = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
   });
+
+  // Handle redirect after successful registration
+  useEffect(() => {
+    if (shouldRedirect) {
+      const timer = setTimeout(() => {
+        window.location.href = "/";
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [shouldRedirect]);
 
   const onSubmit = async (data: RegisterFormData) => {
     setIsSubmitting(true);
@@ -46,10 +57,7 @@ export function RegisterForm() {
         // PRD US-001 AC: "Po rejestracji następuje automatyczne logowanie"
         // Auto-login successful, redirect to dashboard
         setSuccessMessage("Konto utworzone pomyślnie! Przekierowywanie...");
-
-        setTimeout(() => {
-          window.location.href = "/";
-        }, 1000);
+        setShouldRedirect(true);
       }
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : "Rejestracja nie powiodła się");
