@@ -81,29 +81,32 @@ export const RateLimitUtils = {
 
   /**
    * Check concurrent generation limit
+   * Only counts generations that are still in progress (no duration set)
    */
   async checkConcurrentGenerationLimit(
     supabase: SupabaseClient,
     userId: string
   ): Promise<{ allowed: boolean; error: string | null }> {
     try {
-      // Check for generations created in the last 5 minutes (assuming they might still be processing)
-      const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+      // Check for in-progress generations (those without a duration set)
+      // Also limit check to last 10 minutes as a safety measure
+      const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000);
 
-      const { data: recentGenerations, error } = await supabase
+      const { data: inProgressGenerations, error } = await supabase
         .from("generations")
         .select("id")
         .eq("user_id", userId)
-        .gte("created_at", fiveMinutesAgo.toISOString());
+        .is("generation_duration", null)
+        .gte("created_at", tenMinutesAgo.toISOString());
 
       if (error) {
         return { allowed: false, error: "Failed to check concurrent generation limit" };
       }
 
-      if (recentGenerations && recentGenerations.length >= RATE_LIMITS.max_concurrent_generations) {
+      if (inProgressGenerations && inProgressGenerations.length >= RATE_LIMITS.max_concurrent_generations) {
         return {
           allowed: false,
-          error: `Too many concurrent generations. Maximum ${RATE_LIMITS.max_concurrent_generations} generations can be processed simultaneously.`,
+          error: `Zbyt wiele równoczesnych generacji. Poczekaj na zakończenie poprzednich.`,
         };
       }
 

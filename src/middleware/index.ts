@@ -4,26 +4,39 @@ import type { MiddlewareResponseHandler } from "astro";
  * Simplified middleware - delay Supabase initialization to avoid module-level errors
  */
 export const onRequest: MiddlewareResponseHandler = async (context, next) => {
-  // Lazy load Supabase client to avoid module-level initialization issues
-  try {
-    const { supabaseClient } = await import("../db/supabase.client.ts");
-    // Set Supabase client in locals (will be null if env vars are missing)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    context.locals.supabase = supabaseClient as any;
-  } catch {
-    // If import fails, set null - API routes should handle this
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    context.locals.supabase = null as any;
-  }
-
   const url = new URL(context.request.url);
+  const isApiRoute = url.pathname.startsWith("/api/");
+
+  // Use different Supabase clients for API routes vs client-facing routes
+  if (isApiRoute) {
+    // API routes: use server-side client with service role key (bypasses RLS)
+    // This is safe because we do authentication checks in API routes
+    try {
+      const { serverSupabaseClient } = await import("../db/supabase.server.ts");
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      context.locals.supabase = serverSupabaseClient as any;
+    } catch {
+      // If import fails, set null - API routes should handle this
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      context.locals.supabase = null as any;
+    }
+  } else {
+    // Client-facing routes: use regular client with anon key (enforces RLS)
+    try {
+      const { supabaseClient } = await import("../db/supabase.client.ts");
+      // Set Supabase client in locals (will be null if env vars are missing)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      context.locals.supabase = supabaseClient as any;
+    } catch {
+      // If import fails, set null - API routes should handle this
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      context.locals.supabase = null as any;
+    }
+  }
 
   // Public routes - these routes are accessible without authentication
   const PUBLIC_ROUTES = ["/login", "/register"];
   const isPublicRoute = PUBLIC_ROUTES.some((route) => url.pathname.startsWith(route));
-
-  // API routes are handled separately
-  const isApiRoute = url.pathname.startsWith("/api/");
 
   // Everything except public routes and API routes requires authentication
   const isProtectedRoute = !isPublicRoute && !isApiRoute;
