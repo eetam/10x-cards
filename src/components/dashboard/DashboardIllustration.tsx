@@ -55,7 +55,7 @@ export function DashboardIllustration() {
             y="20"
             width="140"
             height="100"
-            rx="8"
+            rx="16"
             fill="#9333ea"
             opacity="0.3"
             transform="rotate(-5 90 70)"
@@ -66,13 +66,13 @@ export function DashboardIllustration() {
             y="10"
             width="140"
             height="100"
-            rx="8"
+            rx="16"
             fill="#2563eb"
             opacity="0.5"
             transform="rotate(2 80 60)"
           />
           {/* Card 1 (front) */}
-          <rect x="0" y="0" width="140" height="100" rx="8" fill="url(#cardGradient)" className="drop-shadow-lg" />
+          <rect x="0" y="0" width="140" height="100" rx="16" fill="url(#cardGradient)" className="drop-shadow-lg" />
 
           {/* Card content lines */}
           <rect x="15" y="20" width="80" height="6" rx="3" fill="white" opacity="0.9" />
