@@ -2,6 +2,7 @@ import type { APIRoute } from "astro";
 import { ResponseUtils } from "../../../lib/utils/response.utils";
 import { loginSchema } from "../../../lib/validation/auth.schema";
 import { ZodError } from "zod";
+import { createSupabaseServerInstance } from "../../../db/supabase.client.ts";
 
 /**
  * POST /api/auth/login
@@ -32,7 +33,7 @@ import { ZodError } from "zod";
  */
 export const prerender = false;
 
-export const POST: APIRoute = async ({ request, locals }) => {
+export const POST: APIRoute = async ({ request, cookies }) => {
   try {
     // Parse and validate request body
     const body = await request.json();
@@ -40,13 +41,15 @@ export const POST: APIRoute = async ({ request, locals }) => {
     // Validate with Zod schema
     const validatedData = loginSchema.parse(body);
 
-    // Check if Supabase client is available
-    if (!locals.supabase) {
-      return ResponseUtils.createErrorResponse("Serwis autentykacji jest niedostępny", "SERVICE_UNAVAILABLE", 500);
-    }
+    // Create SSR client with cookies support
+    // This ensures session is saved in cookies after login
+    const supabase = createSupabaseServerInstance({
+      headers: request.headers,
+      cookies,
+    });
 
     // Sign in with email and password
-    const { data, error } = await locals.supabase.auth.signInWithPassword({
+    const { data, error } = await supabase.auth.signInWithPassword({
       email: validatedData.email,
       password: validatedData.password,
     });
@@ -61,7 +64,8 @@ export const POST: APIRoute = async ({ request, locals }) => {
       return ResponseUtils.createErrorResponse("Nie udało się utworzyć sesji", "SESSION_ERROR", 500);
     }
 
-    // Return user data and session tokens
+    // Session is automatically saved in cookies by the SSR client
+    // Return user data and session tokens for client-side use
     return ResponseUtils.createSuccessResponse({
       user: {
         id: data.user.id,

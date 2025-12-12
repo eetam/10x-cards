@@ -2,6 +2,7 @@ import type { APIRoute } from "astro";
 import { ResponseUtils } from "../../../lib/utils/response.utils";
 import { registerServerSchema } from "../../../lib/validation/auth.schema";
 import { ZodError } from "zod";
+import { createSupabaseServerInstance } from "../../../db/supabase.client.ts";
 
 /**
  * POST /api/auth/register
@@ -32,7 +33,7 @@ import { ZodError } from "zod";
  */
 export const prerender = false;
 
-export const POST: APIRoute = async ({ request, locals }) => {
+export const POST: APIRoute = async ({ request, cookies }) => {
   try {
     // Parse and validate request body
     const body = await request.json();
@@ -40,13 +41,15 @@ export const POST: APIRoute = async ({ request, locals }) => {
     // Validate with Zod schema
     const validatedData = registerServerSchema.parse(body);
 
-    // Check if Supabase client is available
-    if (!locals.supabase) {
-      return ResponseUtils.createErrorResponse("Serwis autentykacji jest niedostępny", "SERVICE_UNAVAILABLE", 500);
-    }
+    // Create SSR client with cookies support
+    // This ensures session is saved in cookies after registration (if auto-login is enabled)
+    const supabase = createSupabaseServerInstance({
+      headers: request.headers,
+      cookies,
+    });
 
     // Register user in Supabase Auth
-    const { data, error } = await locals.supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email: validatedData.email,
       password: validatedData.password,
     });
