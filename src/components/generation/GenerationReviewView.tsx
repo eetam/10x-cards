@@ -259,10 +259,8 @@ export function GenerationReviewView({ generationId }: GenerationReviewViewProps
 
     // Show success/error message
     if (errors.length === 0) {
-      // All saved successfully
-      alert(`Zapisano ${acceptedProposals.length} fiszek.`);
-      // Optionally redirect to flashcards page
-      // window.location.href = "/flashcards";
+      // All saved successfully - redirect to flashcards page
+      window.location.href = "/flashcards";
     } else {
       alert(
         `Zapisano ${acceptedProposals.length - errors.length} z ${acceptedProposals.length} fiszek. ${errors.length} fiszki nie zostały zapisane.`

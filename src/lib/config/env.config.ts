@@ -11,7 +11,7 @@ export const EnvConfig = {
       apiKey: import.meta.env.OPENROUTER_API_KEY,
       baseUrl: "https://openrouter.ai/api/v1",
       timeout: 60000,
-      useMock: import.meta.env.OPENROUTER_USE_MOCK === "true",
+      useMock: Boolean(import.meta.env.OPENROUTER_USE_MOCK),
     };
   },
 
