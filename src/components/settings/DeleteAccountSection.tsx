@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { deleteAccountSchema, type DeleteAccountFormData } from "../../lib/validation/auth.schema";
+import { useAuthStore } from "../../lib/stores/auth.store";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
@@ -27,6 +28,7 @@ export function DeleteAccountSection() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isOpen, setIsOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const logout = useAuthStore((state) => state.logout);
 
   const {
     register,
@@ -72,8 +74,10 @@ export function DeleteAccountSection() {
         throw new Error(result.error?.message || "Nie udało się usunąć konta");
       }
 
-      // Account deleted successfully, redirect to home
-      window.location.href = "/";
+      // Account deleted successfully
+      // Clear session and redirect to login
+      await logout();
+      window.location.replace("/login");
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : "Nie udało się usunąć konta");
       setIsDeleting(false);
