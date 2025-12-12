@@ -30,6 +30,8 @@ interface AuthState {
   initialize: () => Promise<void>;
   setUser: (user: User | null) => void;
   setError: (error: string | null) => void;
+  login: (email: string, password: string) => Promise<void>;
+  register: (email: string, password: string) => Promise<{ requiresEmailConfirmation: boolean }>;
   logout: () => Promise<void>;
 }
 
@@ -47,7 +49,7 @@ export const useAuthStore = create<AuthState>((set) => ({
       try {
         const sessionData = await getAuthSession();
 
-        if (sessionData && sessionData.isAuthenticated && sessionData.user) {
+        if (sessionData.isAuthenticated && sessionData.user) {
           // Create user object from API response
           const user: User = {
             id: sessionData.user.id,
@@ -75,10 +77,9 @@ export const useAuthStore = create<AuthState>((set) => ({
           return;
         }
       } catch (apiError) {
-        // If API call fails, log error and fall back to Supabase client
-        if (import.meta.env.DEV) {
-          const errorMessage = apiError instanceof Error ? apiError.message : String(apiError);
-          console.warn("API auth session failed, falling back to Supabase client:", errorMessage);
+        // If API call fails, fall back to Supabase client
+        if (typeof window !== "undefined" && import.meta.env.DEV) {
+          console.log("[Auth] API session check failed, falling back to Supabase:", apiError);
         }
       }
 
@@ -154,26 +155,162 @@ export const useAuthStore = create<AuthState>((set) => ({
     set({ error });
   },
 
-  logout: async () => {
-    if (!supabaseClient) {
-      // If Supabase client is not available, just clear local state
-      // In the future, we can call API endpoint /api/auth/logout
+  /**
+   * Login user with email and password
+   * PRD: US-002 - Logowanie do aplikacji
+   */
+  login: async (email: string, password: string) => {
+    try {
+      set({ isLoading: true, error: null });
+
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.error?.message || "Logowanie nie powiodło się");
+      }
+
+      // Set session in Supabase client if available
+      if (supabaseClient && data.data.session) {
+        await supabaseClient.auth.setSession({
+          access_token: data.data.session.access_token,
+          refresh_token: data.data.session.refresh_token,
+        });
+      }
+
+      // Create User object from API response
+      const user: User = {
+        id: data.data.user.id,
+        aud: "authenticated",
+        role: "authenticated",
+        email: data.data.user.email,
+        email_confirmed_at: new Date().toISOString(),
+        phone: "",
+        confirmed_at: new Date().toISOString(),
+        last_sign_in_at: new Date().toISOString(),
+        app_metadata: {},
+        user_metadata: {},
+        identities: [],
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        is_anonymous: false,
+      } as User;
+
+      // Update store state
       set({
-        user: null,
-        isAuthenticated: false,
+        user,
+        isAuthenticated: true,
         isLoading: false,
         error: null,
       });
-      return;
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Logowanie nie powiodło się";
+      set({ error: message, isLoading: false, isAuthenticated: false, user: null });
+      throw error;
     }
+  },
 
+  /**
+   * Register new user
+   * PRD: US-001 - Rejestracja konta przez e-mail/hasło
+   * PRD AC: "Po rejestracji następuje automatyczne logowanie"
+   */
+  register: async (email: string, password: string) => {
     try {
       set({ isLoading: true, error: null });
-      const { error } = await supabaseClient.auth.signOut();
-      if (error) {
-        set({ error: error.message, isLoading: false });
-        return;
+
+      const response = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.error?.message || "Rejestracja nie powiodła się");
       }
+
+      const requiresEmailConfirmation = data.data.requiresEmailConfirmation || false;
+
+      // If session is available (email confirmation disabled), auto-login per PRD US-001
+      if (data.data.session && !requiresEmailConfirmation) {
+        // Set session in Supabase client if available
+        if (supabaseClient) {
+          await supabaseClient.auth.setSession({
+            access_token: data.data.session.access_token,
+            refresh_token: data.data.session.refresh_token,
+          });
+        }
+
+        // Create User object from API response
+        const user: User = {
+          id: data.data.user.id,
+          aud: "authenticated",
+          role: "authenticated",
+          email: data.data.user.email,
+          email_confirmed_at: new Date().toISOString(),
+          phone: "",
+          confirmed_at: new Date().toISOString(),
+          last_sign_in_at: new Date().toISOString(),
+          app_metadata: {},
+          user_metadata: {},
+          identities: [],
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          is_anonymous: false,
+        } as User;
+
+        // Update store state - auto-login
+        set({
+          user,
+          isAuthenticated: true,
+          isLoading: false,
+          error: null,
+        });
+      } else {
+        // Email confirmation required - don't auto-login
+        set({ isLoading: false, error: null });
+      }
+
+      return { requiresEmailConfirmation };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Rejestracja nie powiodła się";
+      set({ error: message, isLoading: false });
+      throw error;
+    }
+  },
+
+  /**
+   * Logout user
+   * Calls API endpoint to invalidate session, then clears local state
+   */
+  logout: async () => {
+    try {
+      set({ isLoading: true, error: null });
+
+      // Call logout API endpoint
+      try {
+        await fetch("/api/auth/logout", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+        });
+      } catch (apiError) {
+        // If API call fails, still try to sign out from Supabase client
+        console.error("[Auth] Logout API error:", apiError);
+      }
+
+      // Also sign out from Supabase client if available
+      if (supabaseClient) {
+        await supabaseClient.auth.signOut();
+      }
+
+      // Clear local state
       set({
         user: null,
         isAuthenticated: false,
@@ -181,8 +318,9 @@ export const useAuthStore = create<AuthState>((set) => ({
         error: null,
       });
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Failed to logout";
+      const message = error instanceof Error ? error.message : "Wylogowanie nie powiodło się";
       set({ error: message, isLoading: false });
+      throw error;
     }
   },
 }));

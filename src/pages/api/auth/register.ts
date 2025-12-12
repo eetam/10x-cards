@@ -1,0 +1,95 @@
+import type { APIRoute } from "astro";
+import { ResponseUtils } from "../../../lib/utils/response.utils";
+import { registerServerSchema } from "../../../lib/validation/auth.schema";
+import { ZodError } from "zod";
+
+/**
+ * POST /api/auth/register
+ *
+ * Rejestracja nowego użytkownika
+ * PRD: US-001 - Rejestracja konta przez e-mail/hasło
+ *
+ * Request Body:
+ * {
+ *   email: string;
+ *   password: string;
+ * }
+ *
+ * Response (Success):
+ * {
+ *   success: true,
+ *   data: {
+ *     user: { id: string, email: string },
+ *     session: { access_token: string, refresh_token: string } | null
+ *   }
+ * }
+ *
+ * Response (Error):
+ * {
+ *   success: false,
+ *   error: { message: string, code: string, field?: string }
+ * }
+ */
+export const prerender = false;
+
+export const POST: APIRoute = async ({ request, locals }) => {
+  try {
+    // Parse and validate request body
+    const body = await request.json();
+
+    // Validate with Zod schema
+    const validatedData = registerServerSchema.parse(body);
+
+    // Check if Supabase client is available
+    if (!locals.supabase) {
+      return ResponseUtils.createErrorResponse("Serwis autentykacji jest niedostępny", "SERVICE_UNAVAILABLE", 500);
+    }
+
+    // Register user in Supabase Auth
+    const { data, error } = await locals.supabase.auth.signUp({
+      email: validatedData.email,
+      password: validatedData.password,
+    });
+
+    if (error) {
+      // Map Supabase error to user-friendly message
+      const { message, code } = ResponseUtils.mapSupabaseAuthError(error);
+      return ResponseUtils.createErrorResponse(message, code, 400);
+    }
+
+    if (!data.user) {
+      return ResponseUtils.createErrorResponse("Nie udało się utworzyć konta", "REGISTRATION_FAILED", 500);
+    }
+
+    // PRD US-001 AC: "Po rejestracji następuje automatyczne logowanie"
+    // Return user data and session for automatic login
+    return ResponseUtils.createSuccessResponse(
+      {
+        user: {
+          id: data.user.id,
+          email: data.user.email,
+        },
+        // Session will be available if email confirmation is disabled in Supabase
+        session: data.session
+          ? {
+              access_token: data.session.access_token,
+              refresh_token: data.session.refresh_token,
+            }
+          : null,
+        requiresEmailConfirmation: !data.session,
+        message: data.session ? "Konto utworzone pomyślnie" : "Sprawdź email aby aktywować konto",
+      },
+      201
+    );
+  } catch (error) {
+    // Handle Zod validation errors
+    if (error instanceof ZodError) {
+      const firstError = error.errors[0];
+      return ResponseUtils.createValidationErrorResponse(firstError.message, firstError.path.join("."));
+    }
+
+    // Handle other errors
+    console.error("[Register API] Error:", error);
+    return ResponseUtils.createInternalErrorResponse("Wystąpił błąd podczas rejestracji");
+  }
+};
