@@ -4,8 +4,17 @@ import { NavLinks } from "./NavLinks";
 import { MobileNav } from "./MobileNav";
 import { UserMenu } from "./UserMenu";
 import { DashboardAuthLinks } from "../dashboard/DashboardAuthLinks";
+import { AuthProvider } from "../providers/AuthProvider";
 
 export function Header() {
+  return (
+    <AuthProvider>
+      <HeaderContent />
+    </AuthProvider>
+  );
+}
+
+function HeaderContent() {
   const { isAuthenticated, isLoading } = useAuth();
 
   return (

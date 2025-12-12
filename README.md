@@ -93,16 +93,36 @@ An AI-powered flashcard generation application that streamlines the creation of 
    Create a `.env` file in the root directory with the following variables:
 
    ```env
-   # Supabase Configuration
-   PUBLIC_SUPABASE_URL=your_supabase_url
-   PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+   # Server-side Supabase credentials (for API routes and middleware)
+   SUPABASE_URL=http://127.0.0.1:54321
+   SUPABASE_KEY=your-supabase-service-role-key
+
+   # Public Supabase credentials (for client-side auth session persistence)
+   # REQUIRED for authentication to work - allows Supabase client to persist sessions
+   PUBLIC_SUPABASE_URL=http://127.0.0.1:54321
+   PUBLIC_SUPABASE_KEY=your-supabase-anon-key
 
    # OpenRouter.ai Configuration
    OPENROUTER_API_KEY=your_openrouter_api_key
 
    # Optional: Use mock responses instead of real API calls (for development)
    OPENROUTER_USE_MOCK=true
+
+   # Optional: Default user ID for development (bypasses auth)
+   # DEFAULT_USER_ID=your-test-user-uuid
    ```
+
+   **Finding your Supabase keys:**
+
+   If you're running Supabase locally with Docker:
+   ```bash
+   # Check your Supabase logs or Studio
+   # Default local keys (if using standard Supabase local setup):
+   # - anon key: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeJeaUCuOmfHB4wWQiDxOTWnhgOFRFXGCBA
+   # - service_role: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU
+   ```
+
+   If using Supabase Cloud, find your keys at: https://app.supabase.com/project/YOUR_PROJECT/settings/api
 
 5. **Start the development server**
 

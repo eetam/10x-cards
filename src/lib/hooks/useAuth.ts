@@ -1,27 +1,16 @@
-import { useEffect, useRef } from "react";
 import { useAuthStore } from "../stores/auth.store";
 
 /**
  * Hook to access authentication state and methods
+ * Note: Auth is initialized by AuthProvider at app root
  * @returns Authentication state and methods
  */
 export function useAuth() {
-  const { user, isAuthenticated, isLoading, error, initialize, logout } = useAuthStore();
-  const initializedRef = useRef(false);
-
-  useEffect(() => {
-    // Initialize auth state only once on mount
-    if (!initializedRef.current) {
-      initializedRef.current = true;
-      void initialize().catch((err) => {
-        // Error during initialization - already handled by store
-        if (import.meta.env.DEV) {
-          // eslint-disable-next-line no-console
-          console.error("Error initializing auth:", err);
-        }
-      });
-    }
-  }, [initialize]); // Initialize is stable from Zustand store
+  const user = useAuthStore((state) => state.user);
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const isLoading = useAuthStore((state) => state.isLoading);
+  const error = useAuthStore((state) => state.error);
+  const logout = useAuthStore((state) => state.logout);
 
   return {
     user,
