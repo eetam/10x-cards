@@ -37,7 +37,9 @@ export function UserMenu() {
     setIsLoggingOut(true);
     try {
       await logout();
-      window.location.href = "/";
+      // Redirect to login page after successful logout
+      // Using replace to prevent back button from returning to protected page
+      window.location.replace("/login");
     } catch (error) {
       console.error("Logout error:", error);
       setIsLoggingOut(false);
