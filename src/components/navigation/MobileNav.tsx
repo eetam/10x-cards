@@ -49,14 +49,21 @@ export function MobileNav() {
             </div>
           )}
 
-          {/* Navigation links */}
-          <nav className="flex flex-col gap-2">
-            {navigationItems.map((item) => (
-              <NavLink key={item.href} href={item.href} className="w-full justify-start py-3" onClick={handleNavClick}>
-                {item.label}
-              </NavLink>
-            ))}
-          </nav>
+          {/* Navigation links - only show for authenticated users */}
+          {isAuthenticated && (
+            <nav className="flex flex-col gap-2">
+              {navigationItems.map((item) => (
+                <NavLink
+                  key={item.href}
+                  href={item.href}
+                  className="w-full justify-start py-3"
+                  onClick={handleNavClick}
+                >
+                  {item.label}
+                </NavLink>
+              ))}
+            </nav>
+          )}
 
           {/* Auth section */}
           {!isLoading && (

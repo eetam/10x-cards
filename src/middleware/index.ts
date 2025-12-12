@@ -18,9 +18,15 @@ export const onRequest: MiddlewareResponseHandler = async (context, next) => {
 
   const url = new URL(context.request.url);
 
-  // Protected routes list - these routes require authentication
-  const PROTECTED_ROUTES = ["/generate", "/settings"];
-  const isProtectedRoute = PROTECTED_ROUTES.some((route) => url.pathname.startsWith(route));
+  // Public routes - these routes are accessible without authentication
+  const PUBLIC_ROUTES = ["/login", "/register"];
+  const isPublicRoute = PUBLIC_ROUTES.some((route) => url.pathname.startsWith(route));
+
+  // API routes are handled separately
+  const isApiRoute = url.pathname.startsWith("/api/");
+
+  // Everything except public routes and API routes requires authentication
+  const isProtectedRoute = !isPublicRoute && !isApiRoute;
 
   // Check if route is protected
   if (isProtectedRoute) {

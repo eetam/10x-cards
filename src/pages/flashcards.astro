@@ -4,7 +4,9 @@ import { FlashcardsListWithProvider } from "../components/flashcards/FlashcardsL
 ---
 
 <Layout title="Moje fiszki - 10xCards">
-  <main class="container mx-auto px-4 py-8">
-    <FlashcardsListWithProvider client:load />
+  <main class="flex-1 overflow-y-auto">
+    <div class="container mx-auto px-4 py-8">
+      <FlashcardsListWithProvider client:load />
+    </div>
   </main>
 </Layout>

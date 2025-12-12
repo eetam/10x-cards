@@ -15,5 +15,7 @@ import { SettingsPageWithProvider } from "../components/settings/SettingsPageWit
 ---
 
 <Layout title="Ustawienia - 10xCards">
-  <SettingsPageWithProvider client:load />
+  <main class="flex-1 overflow-y-auto">
+    <SettingsPageWithProvider client:load />
+  </main>
 </Layout>

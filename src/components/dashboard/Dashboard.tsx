@@ -3,14 +3,14 @@
 import * as React from "react";
 import { DashboardHero } from "./DashboardHero";
 import { DashboardActions } from "./DashboardActions";
-import { DashboardAuthLinks } from "./DashboardAuthLinks";
 import { useAuth } from "../../lib/hooks/useAuth";
 
 /**
- * Dashboard component - Main dashboard view combining all dashboard sections
+ * Dashboard component - Main dashboard view for authenticated users
+ * Note: This page is protected by middleware - unauthenticated users are redirected to /login
  */
 export function Dashboard() {
-  const { isAuthenticated, userId, isLoading, error } = useAuth();
+  const { userId, isLoading } = useAuth();
 
   // Show loading state while checking authentication
   if (isLoading) {
@@ -23,22 +23,11 @@ export function Dashboard() {
     );
   }
 
+  // User is authenticated (guaranteed by middleware)
   return (
     <div className="container mx-auto px-4 py-8 max-w-6xl">
       <DashboardHero />
-      {isAuthenticated ? (
-        <DashboardActions isAuthenticated={isAuthenticated} userId={userId ?? undefined} />
-      ) : (
-        <>
-          <DashboardAuthLinks isAuthenticated={isAuthenticated} />
-          <DashboardActions isAuthenticated={isAuthenticated} userId={userId ?? undefined} />
-        </>
-      )}
-      {error && (
-        <div className="rounded-lg border border-destructive bg-destructive/10 p-4 text-destructive text-sm mb-4">
-          Błąd autoryzacji: {typeof error === "string" ? error : JSON.stringify(error)}
-        </div>
-      )}
+      <DashboardActions isAuthenticated={true} userId={userId ?? undefined} />
     </div>
   );
 }

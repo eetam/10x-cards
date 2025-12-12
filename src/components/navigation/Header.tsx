@@ -15,7 +15,7 @@ export function Header() {
 
         {/* Desktop Navigation */}
         <div className="hidden md:flex items-center gap-6">
-          <NavLinks />
+          {isAuthenticated && <NavLinks />}
           {!isLoading && (isAuthenticated ? <UserMenu /> : <DashboardAuthLinks />)}
         </div>
 
