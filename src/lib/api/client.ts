@@ -38,13 +38,12 @@ function getSupabaseClient() {
 
 /**
  * Get authorization token from Supabase session
- * Returns null if Supabase client is not available (API will handle DEFAULT_USER_ID on server)
+ * Returns null if Supabase client is not available or user is not authenticated
  */
 async function getAuthToken(): Promise<string | null> {
   const client = getSupabaseClient();
   if (!client) {
-    // If Supabase client is not available, return null
-    // API endpoints will handle DEFAULT_USER_ID on server-side
+    // If Supabase client is not available, return null (user not authenticated)
     return null;
   }
 

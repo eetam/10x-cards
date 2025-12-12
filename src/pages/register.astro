@@ -1,0 +1,21 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { RegisterFormWithProvider } from "../components/auth/RegisterFormWithProvider";
+
+/**
+ * Registration page
+ * PRD: US-001 - Rejestracja konta przez e-mail/hasło
+ *
+ * AC:
+ * - Formularz z polami email, hasło, potwierdzenie hasła
+ * - Walidacja formatu e-mail i minimalnej długości hasła (8 znaków)
+ * - Po rejestracji następuje automatyczne logowanie
+ * - Przekierowanie na stronę główną po rejestracji
+ */
+---
+
+<Layout title="Rejestracja - 10xCards">
+  <main class="flex-1 flex items-center justify-center bg-background px-4 overflow-y-auto">
+    <RegisterFormWithProvider client:load />
+  </main>
+</Layout>

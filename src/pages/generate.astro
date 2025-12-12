@@ -4,11 +4,13 @@ import { GenerationForm } from "../components/generation/GenerationForm";
 ---
 
 <Layout title="Generuj fiszki - 10xCards">
-  <main class="container mx-auto px-4 py-8 max-w-4xl">
-    <h1 class="text-3xl font-bold mb-6">Generuj fiszki</h1>
-    <p class="text-muted-foreground mb-8">
-      Wklej tekst źródłowy (1000-10000 znaków), a system wygeneruje propozycje fiszek przy użyciu AI.
-    </p>
-    <GenerationForm client:load />
+  <main class="flex-1 overflow-y-auto">
+    <div class="container mx-auto px-4 py-8 max-w-4xl">
+      <h1 class="text-3xl font-bold mb-6">Generuj fiszki</h1>
+      <p class="text-muted-foreground mb-8">
+        Wklej tekst źródłowy (1000-10000 znaków), a system wygeneruje propozycje fiszek przy użyciu AI.
+      </p>
+      <GenerationForm client:load />
+    </div>
   </main>
 </Layout>

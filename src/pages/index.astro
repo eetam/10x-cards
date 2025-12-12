@@ -4,5 +4,7 @@ import { DashboardWithProvider } from "../components/dashboard/DashboardWithProv
 ---
 
 <Layout title="10xCards - Dashboard">
-  <DashboardWithProvider client:load />
+  <main class="flex-1 overflow-y-auto">
+    <DashboardWithProvider client:load />
+  </main>
 </Layout>
