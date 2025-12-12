@@ -2,7 +2,6 @@ import { create } from "zustand";
 import type { User } from "@supabase/supabase-js";
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "../../db/database.types";
-import { getAuthSession } from "../api/auth.api";
 
 /**
  * Create Supabase client for browser (optional)
