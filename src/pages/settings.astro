@@ -1,0 +1,19 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { SettingsPageWithProvider } from "../components/settings/SettingsPageWithProvider";
+
+/**
+ * Settings page
+ * PRD: US-003 - Zmiana hasła & US-004 - Usunięcie konta
+ *
+ * Protected route - requires authentication (middleware redirect)
+ *
+ * Tabs:
+ * - Zmiana hasła: formularz z obecnym i nowym hasłem
+ * - Usunięcie konta: przycisk z potwierdzeniem hasłem
+ */
+---
+
+<Layout title="Ustawienia - 10xCards">
+  <SettingsPageWithProvider client:load />
+</Layout>

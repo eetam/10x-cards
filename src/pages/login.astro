@@ -1,0 +1,23 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { LoginFormWithProvider } from "../components/auth/LoginFormWithProvider";
+
+/**
+ * Login page
+ * PRD: US-002 - Logowanie do aplikacji
+ *
+ * Query params:
+ * - redirect: URL to redirect to after successful login (default: "/")
+ *
+ * AC:
+ * - Formularz z polami email i hasło
+ * - Walidacja formatu email i hasła
+ * - Przekierowanie po zalogowaniu
+ */
+---
+
+<Layout title="Logowanie - 10xCards">
+  <div class="min-h-screen flex items-center justify-center bg-background px-4 py-12">
+    <LoginFormWithProvider client:load />
+  </div>
+</Layout>

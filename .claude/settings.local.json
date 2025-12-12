@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git add:*)",
+      "Bash(npm run lint:*)",
+      "Bash(git commit -m \"$(cat <<''EOF''\nfeat(auth): implement Phase 1 - Backend Foundation (clean)\n\nFAZA 1 - BACKEND FOUNDATION ✅\n\nBackend API Endpoints:\n- POST /api/auth/register - rejestracja z auto-logowaniem (PRD US-001)\n- POST /api/auth/login - logowanie z JWT tokens (PRD US-002) \n- POST /api/auth/logout - wylogowanie i invalidacja sesji\n\nValidation & Schema:\n- auth.schema.ts - Zod schematy zgodne z PRD\n  * loginSchema, registerSchema (min 8 znaków, bez regex)\n  * changePasswordSchema, deleteAccountSchema\n  * Rozszerzone wersje dla lepszego UX (opcjonalne)\n  * Forgot/reset password schematy (poza MVP)\n\nState Management:\n- Rozszerzony auth.store.ts o metody:\n  * login() - wywołuje API, ustawia sesję, aktualizuje state\n  * register() - wywołuje API, auto-login per PRD\n  * logout() - ulepszony o wywołanie API endpoint\n\nUtilities:\n- response.utils.ts - mapSupabaseAuthError()\n  * Mapowanie błędów Supabase na polski\n  * User-friendly komunikaty\n\nPRD Coverage:\n- ✅ US-001: Registration backend \n- ✅ US-002: Login backend\n\nTech Stack: Astro + Zod + Zustand + Supabase Auth\n\nNext: Phase 2 - Frontend UI (login.astro, register.astro, forms)\nEOF\n)\")",
+      "Bash(npx shadcn@latest add:*)",
+      "Bash(npx prettier --write src/components/ui/tabs.tsx)",
+      "Bash(npm run lint)"
+    ]
+  }
+}

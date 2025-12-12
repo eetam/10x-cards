@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { Menu } from "lucide-react";
+import { Menu, Settings, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { NavLink } from "./NavLink";
+import { useAuth } from "../../lib/hooks/useAuth";
 
 const navigationItems = [
   { href: "/", label: "Dashboard" },
@@ -13,9 +14,23 @@ const navigationItems = [
 
 export function MobileNav() {
   const [open, setOpen] = useState(false);
+  const { isAuthenticated, isLoading, user, logout } = useAuth();
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const handleNavClick = () => {
     setOpen(false);
+  };
+
+  const handleLogout = async () => {
+    setIsLoggingOut(true);
+    try {
+      await logout();
+      setOpen(false);
+      window.location.href = "/";
+    } catch (error) {
+      console.error("Logout error:", error);
+      setIsLoggingOut(false);
+    }
   };
 
   return (
@@ -27,13 +42,59 @@ export function MobileNav() {
           </Button>
         </DialogTrigger>
         <DialogContent className="sm:max-w-md">
-          <nav className="flex flex-col gap-2 mt-4">
+          {/* User info if authenticated */}
+          {!isLoading && isAuthenticated && user && (
+            <div className="border-b pb-4 mb-4">
+              <p className="text-sm font-medium">{user.email}</p>
+            </div>
+          )}
+
+          {/* Navigation links */}
+          <nav className="flex flex-col gap-2">
             {navigationItems.map((item) => (
               <NavLink key={item.href} href={item.href} className="w-full justify-start py-3" onClick={handleNavClick}>
                 {item.label}
               </NavLink>
             ))}
           </nav>
+
+          {/* Auth section */}
+          {!isLoading && (
+            <div className="border-t pt-4 mt-4 flex flex-col gap-2">
+              {isAuthenticated ? (
+                <>
+                  <Button variant="outline" className="w-full justify-start" asChild>
+                    <a href="/settings" onClick={handleNavClick}>
+                      <Settings className="mr-2 size-4" />
+                      Ustawienia
+                    </a>
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="w-full justify-start text-destructive hover:text-destructive"
+                    onClick={handleLogout}
+                    disabled={isLoggingOut}
+                  >
+                    <LogOut className="mr-2 size-4" />
+                    {isLoggingOut ? "Wylogowywanie..." : "Wyloguj się"}
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Button variant="outline" className="w-full" asChild>
+                    <a href="/login" onClick={handleNavClick}>
+                      Zaloguj się
+                    </a>
+                  </Button>
+                  <Button className="w-full" asChild>
+                    <a href="/register" onClick={handleNavClick}>
+                      Zarejestruj się
+                    </a>
+                  </Button>
+                </>
+              )}
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </div>
