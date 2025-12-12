@@ -43,9 +43,9 @@ export function DashboardIllustration() {
         className="w-full h-auto drop-shadow-2xl overflow-visible"
         style={{ overflow: "visible" }}
       >
-        {/* Background gradient circles */}
-        <circle cx="200" cy="150" r="120" fill="url(#gradient1)" opacity="0.1" className="animate-pulse" />
-        <circle cx="220" cy="130" r="80" fill="url(#gradient2)" opacity="0.15" className="animate-pulse" />
+        {/* Background gradient circles - positioned to not overlap with cards */}
+        <circle cx="320" cy="150" r="100" fill="url(#gradient1)" opacity="0.1" className="animate-pulse" />
+        <circle cx="80" cy="200" r="70" fill="url(#gradient2)" opacity="0.15" className="animate-pulse" />
 
         {/* Flashcard stack */}
         <g transform="translate(120, 90)" className="animate-gentle-pulse">
