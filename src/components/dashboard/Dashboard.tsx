@@ -26,7 +26,7 @@ export function Dashboard() {
 
   // User is authenticated (guaranteed by middleware)
   return (
-    <div className="container mx-auto px-4 py-8 max-w-7xl">
+    <div className="container mx-auto px-4 py-4 md:py-6 max-w-7xl">
       <DashboardHero />
       <DashboardStats />
       <DashboardActions isAuthenticated={true} userId={userId ?? undefined} />

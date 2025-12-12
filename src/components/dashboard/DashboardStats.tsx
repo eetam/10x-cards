@@ -53,7 +53,7 @@ export function DashboardStats() {
       value: stats.totalFlashcards,
       description: "w Twojej kolekcji",
       icon: BookOpen,
-      iconColor: "text-blue-600",
+      iconColor: "text-[#2563eb]",
       bgColor: "bg-blue-50 dark:bg-blue-950",
     },
     {
@@ -69,7 +69,7 @@ export function DashboardStats() {
       value: stats.totalGenerations,
       description: "utworzone przez AI",
       icon: Sparkles,
-      iconColor: "text-purple-600",
+      iconColor: "text-[#9333ea]",
       bgColor: "bg-purple-50 dark:bg-purple-950",
     },
     {
@@ -77,13 +77,13 @@ export function DashboardStats() {
       value: stats.studiedToday,
       description: "fiszek przećwiczonych",
       icon: TrendingUp,
-      iconColor: "text-green-600",
-      bgColor: "bg-green-50 dark:bg-green-950",
+      iconColor: "text-[#ec4899]",
+      bgColor: "bg-pink-50 dark:bg-pink-950",
     },
   ];
 
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-8">
+    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-6">
       {statCards.map((stat) => {
         const Icon = stat.icon;
         return (
