@@ -4,7 +4,7 @@ import * as React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { BookOpen, Calendar, Sparkles, TrendingUp } from "lucide-react";
-import { getAuthToken } from "../../lib/api/client";
+import { apiClient } from "../../lib/api/client";
 
 interface DashboardStats {
   totalFlashcards: number;
@@ -14,20 +14,7 @@ interface DashboardStats {
 }
 
 async function fetchDashboardStats(): Promise<DashboardStats> {
-  const token = await getAuthToken();
-
-  const response = await fetch("/api/dashboard/stats", {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
-
-  if (!response.ok) {
-    throw new Error("Failed to fetch dashboard stats");
-  }
-
-  const data = await response.json();
-  return data.data;
+  return apiClient.get<DashboardStats>("/api/dashboard/stats");
 }
 
 export function DashboardStats() {
