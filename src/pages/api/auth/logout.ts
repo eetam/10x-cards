@@ -1,5 +1,6 @@
 import type { APIRoute } from "astro";
 import { ResponseUtils } from "../../../lib/utils/response.utils";
+import { createSupabaseServerInstance } from "../../../db/supabase.client.ts";
 
 /**
  * POST /api/auth/logout
@@ -24,16 +25,17 @@ import { ResponseUtils } from "../../../lib/utils/response.utils";
  */
 export const prerender = false;
 
-export const POST: APIRoute = async ({ locals }) => {
+export const POST: APIRoute = async ({ request, cookies }) => {
   try {
-    // Check if Supabase client is available
-    if (!locals.supabase) {
-      return ResponseUtils.createErrorResponse("Serwis autentykacji jest niedostępny", "SERVICE_UNAVAILABLE", 500);
-    }
+    // Create SSR client with cookies support
+    // This ensures session cookies are cleared on logout
+    const supabase = createSupabaseServerInstance({
+      headers: request.headers,
+      cookies,
+    });
 
-    // Sign out - Supabase handles session invalidation
-    // Works with both cookie and JWT token authentication
-    const { error } = await locals.supabase.auth.signOut();
+    // Sign out - Supabase handles session invalidation and cookie clearing
+    const { error } = await supabase.auth.signOut();
 
     if (error) {
       console.error("[Logout API] Error:", error);

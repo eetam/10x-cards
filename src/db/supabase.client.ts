@@ -1,4 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
+import { createServerClient, type CookieOptionsWithName } from "@supabase/ssr";
+import type { AstroCookies } from "astro";
 
 import type { Database } from "../db/database.types.ts";
 
@@ -45,3 +47,65 @@ export function getSupabaseClient() {
 // Export the client directly for backward compatibility
 // This will be null if variables are not available, but allows the app to load
 export { supabaseClient };
+
+/**
+ * Cookie options for Supabase SSR
+ * - secure: true only in production (HTTPS required)
+ * - secure: false in development (localhost works without HTTPS)
+ */
+export const cookieOptions: CookieOptionsWithName = {
+  path: "/",
+  secure: import.meta.env.PROD, // false in dev (localhost), true in prod (HTTPS)
+  httpOnly: true,
+  sameSite: "lax" as const,
+};
+
+/**
+ * Parse cookie header string into array of cookie objects
+ */
+function parseCookieHeader(cookieHeader: string): { name: string; value: string }[] {
+  if (!cookieHeader) return [];
+  return cookieHeader.split(";").map((cookie) => {
+    const [name, ...rest] = cookie.trim().split("=");
+    return { name, value: rest.join("=") };
+  });
+}
+
+/**
+ * Create a Supabase server client with SSR support (cookies)
+ * This is required for server-side authentication checks in middleware and API routes
+ */
+export function createSupabaseServerInstance(context: {
+  headers: Headers;
+  cookies: AstroCookies;
+}): ReturnType<typeof createServerClient<Database>> {
+  const url = import.meta.env.PUBLIC_SUPABASE_URL || import.meta.env.SUPABASE_URL;
+  const key = import.meta.env.PUBLIC_SUPABASE_KEY || import.meta.env.SUPABASE_KEY;
+
+  if (!url || !key) {
+    throw new Error(
+      "Supabase URL and key are required. Please ensure SUPABASE_URL and SUPABASE_KEY (or PUBLIC_SUPABASE_URL and PUBLIC_SUPABASE_KEY) are set in your environment variables."
+    );
+  }
+
+  return createServerClient<Database>(url, key, {
+    cookieOptions,
+    cookies: {
+      getAll() {
+        const cookieHeader = context.headers.get("Cookie") ?? "";
+        return parseCookieHeader(cookieHeader);
+      },
+      setAll(cookiesToSet) {
+        cookiesToSet.forEach(({ name, value, options }) => {
+          context.cookies.set(name, value, {
+            ...options,
+            secure: import.meta.env.PROD, // false in dev, true in prod
+            httpOnly: true,
+            sameSite: "lax",
+            path: "/",
+          });
+        });
+      },
+    },
+  });
+}
