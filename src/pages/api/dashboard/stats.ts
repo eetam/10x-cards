@@ -36,8 +36,12 @@ export const GET: APIRoute = async ({ request, locals }) => {
       userId = user.id;
     }
 
+    // Calculate start of today (midnight UTC)
+    const now = new Date();
+    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
+
     // Fetch statistics
-    const [flashcardsResult, dueResult, generationsResult] = await Promise.all([
+    const [flashcardsResult, dueResult, generationsResult, studiedTodayResult] = await Promise.all([
       // Total flashcards count
       locals.supabase.from("flashcards").select("id", { count: "exact", head: true }).eq("user_id", userId),
 
@@ -50,13 +54,32 @@ export const GET: APIRoute = async ({ request, locals }) => {
 
       // Total generations count
       locals.supabase.from("generations").select("id", { count: "exact", head: true }).eq("user_id", userId),
+
+      // Flashcards studied today (with reviews in review_history from today)
+      locals.supabase.from("flashcards").select("id, review_history").eq("user_id", userId),
     ]);
+
+    // Count flashcards that have reviews today
+    let studiedToday = 0;
+    if (studiedTodayResult.data) {
+      studiedToday = studiedTodayResult.data.filter((flashcard) => {
+        const reviewHistory = flashcard.review_history as
+          | { reviewedAt: string; rating: number; previousState: number; newState: number }[]
+          | undefined;
+
+        if (!Array.isArray(reviewHistory)) return false;
+
+        return reviewHistory.some((review) => {
+          return review.reviewedAt && review.reviewedAt >= startOfToday;
+        });
+      }).length;
+    }
 
     const stats = {
       totalFlashcards: flashcardsResult.count || 0,
       dueToday: dueResult.count || 0,
       totalGenerations: generationsResult.count || 0,
-      studiedToday: 0, // TODO: Implement when review_history tracking is added
+      studiedToday,
     };
 
     return ResponseUtils.createSuccessResponse(stats, 200);

@@ -6,7 +6,7 @@
  */
 export function DashboardIllustration() {
   return (
-    <div className="relative w-full max-w-xs mx-auto mb-3">
+    <div className="relative w-full max-w-[200px] sm:max-w-xs mx-auto mb-2 sm:mb-3">
       <style>
         {`
         @keyframes gentle-pulse {

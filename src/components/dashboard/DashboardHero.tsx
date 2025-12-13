@@ -8,13 +8,13 @@ import { DashboardIllustration } from "./DashboardIllustration";
  */
 export function DashboardHero() {
   return (
-    <div className="text-center space-y-3 mb-8">
+    <div className="text-center space-y-2 sm:space-y-3 mb-4 sm:mb-8">
       <DashboardIllustration />
-      <div className="space-y-2">
-        <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-[#2563eb] via-[#9333ea] to-[#ec4899] text-transparent bg-clip-text">
+      <div className="space-y-1 sm:space-y-2">
+        <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-[#2563eb] via-[#9333ea] to-[#ec4899] text-transparent bg-clip-text">
           10xCards
         </h1>
-        <p className="text-sm md:text-base text-muted-foreground max-w-xl mx-auto">
+        <p className="text-xs sm:text-sm md:text-base text-muted-foreground max-w-xl mx-auto px-4">
           Twórz fiszki edukacyjne z AI. Ucz się efektywnie metodą powtórek interwałowych.
         </p>
       </div>
