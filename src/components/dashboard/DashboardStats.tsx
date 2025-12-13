@@ -83,7 +83,7 @@ export function DashboardStats() {
   ];
 
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-6">
+    <div className="grid gap-3 sm:gap-4 md:grid-cols-2 lg:grid-cols-4 mb-4 sm:mb-6">
       {statCards.map((stat) => {
         const Icon = stat.icon;
         return (

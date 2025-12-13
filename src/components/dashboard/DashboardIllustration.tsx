@@ -6,7 +6,7 @@
  */
 export function DashboardIllustration() {
   return (
-    <div className="relative w-full max-w-xs mx-auto mb-3">
+    <div className="relative w-full max-w-[200px] sm:max-w-xs mx-auto mb-2 sm:mb-3">
       <style>
         {`
         @keyframes gentle-pulse {
@@ -43,9 +43,9 @@ export function DashboardIllustration() {
         className="w-full h-auto drop-shadow-2xl overflow-visible"
         style={{ overflow: "visible" }}
       >
-        {/* Background gradient circles - positioned to not overlap with cards */}
-        <circle cx="320" cy="150" r="100" fill="url(#gradient1)" opacity="0.1" className="animate-pulse" />
-        <circle cx="80" cy="200" r="70" fill="url(#gradient2)" opacity="0.15" className="animate-pulse" />
+        {/* Background gradient circles - positioned behind cards for layered effect */}
+        <circle cx="200" cy="140" r="120" fill="url(#gradient1)" opacity="0.1" className="animate-pulse" />
+        <circle cx="180" cy="160" r="90" fill="url(#gradient2)" opacity="0.15" className="animate-pulse" />
 
         {/* Flashcard stack */}
         <g transform="translate(120, 90)" className="animate-gentle-pulse">
