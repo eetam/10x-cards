@@ -139,6 +139,7 @@ export function GenerationForm() {
               <FormControl>
                 <Textarea
                   id="sourceText"
+                  data-testid="generation-source-text"
                   placeholder="Wklej tekst (1000-10000 znaków)..."
                   disabled={isSubmitting}
                   className="min-h-[200px] resize-y"
@@ -165,7 +166,7 @@ export function GenerationForm() {
 
         {/* Error Alert */}
         {error && (
-          <Alert variant="destructive">
+          <Alert variant="destructive" data-testid="generation-error-alert">
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>{getErrorMessage(error)}</AlertDescription>
           </Alert>
@@ -183,7 +184,13 @@ export function GenerationForm() {
         {isSubmitting && <Progress value={undefined} className="h-2" />}
 
         {/* Submit Button */}
-        <Button type="submit" disabled={isSubmitting || !isFormValid} className="w-full" aria-busy={isSubmitting}>
+        <Button
+          type="submit"
+          data-testid="generation-submit-button"
+          disabled={isSubmitting || !isFormValid}
+          className="w-full"
+          aria-busy={isSubmitting}
+        >
           {isSubmitting ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />

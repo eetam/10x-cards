@@ -71,10 +71,12 @@ export function ProposalCard({
   const isPending = proposal.status === "pending";
 
   return (
-    <Card>
+    <Card data-testid={`proposal-card-${index}`}>
       <CardHeader>
         <div className="flex items-start justify-between gap-4">
-          <CardTitle className="text-lg">{displayFront}</CardTitle>
+          <CardTitle className="text-lg" data-testid={`proposal-front-${index}`}>
+            {displayFront}
+          </CardTitle>
           <div className="flex items-center gap-2">
             {proposal.confidence !== undefined && (
               <Badge variant="outline" className="text-xs">
@@ -94,21 +96,41 @@ export function ProposalCard({
             </Button>
           </CollapsibleTrigger>
           <CollapsibleContent className="pt-4">
-            <div className="rounded-md border bg-muted/50 p-4 text-sm">{displayBack}</div>
+            <div className="rounded-md border bg-muted/50 p-4 text-sm" data-testid={`proposal-back-${index}`}>
+              {displayBack}
+            </div>
           </CollapsibleContent>
         </Collapsible>
       </CardContent>
       {isPending && (
         <CardFooter className="flex gap-2">
-          <Button variant="default" size="sm" onClick={() => onAccept(index)} className="flex-1">
+          <Button
+            variant="default"
+            size="sm"
+            onClick={() => onAccept(index)}
+            className="flex-1"
+            data-testid={`proposal-accept-${index}`}
+          >
             <Check className="mr-2 size-4" />
             Akceptuj
           </Button>
-          <Button variant="outline" size="sm" onClick={() => onEdit(index)} className="flex-1">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onEdit(index)}
+            className="flex-1"
+            data-testid={`proposal-edit-${index}`}
+          >
             <Edit className="mr-2 size-4" />
             Edytuj
           </Button>
-          <Button variant="outline" size="sm" onClick={() => onReject(index)} className="flex-1">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onReject(index)}
+            className="flex-1"
+            data-testid={`proposal-reject-${index}`}
+          >
             <X className="mr-2 size-4" />
             Odrzuć
           </Button>

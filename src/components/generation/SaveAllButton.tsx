@@ -18,7 +18,7 @@ export function SaveAllButton({ acceptedCount, isSaving, onSave }: SaveAllButton
   const isDisabled = acceptedCount === 0 || isSaving;
 
   return (
-    <Button onClick={onSave} disabled={isDisabled} size="lg">
+    <Button onClick={onSave} disabled={isDisabled} size="lg" data-testid="save-all-button">
       {isSaving ? (
         <>
           <Loader2 className="mr-2 size-4 animate-spin" />
