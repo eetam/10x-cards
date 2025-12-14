@@ -53,8 +53,8 @@ export const GET: APIRoute = async ({ request, locals }) => {
 
     // Fetch all necessary data in parallel
     const [generationsResult, flashcardsResult, aiFullResult, aiEditedResult, manualResult] = await Promise.all([
-      // Get all generations with proposals_count
-      locals.supabase.from("generations").select("proposals_count"),
+      // Get all generations with generated_count (number of proposals generated)
+      locals.supabase.from("generations").select("generated_count"),
 
       // Get total flashcards count
       locals.supabase.from("flashcards").select("id", { count: "exact", head: true }),
@@ -70,7 +70,7 @@ export const GET: APIRoute = async ({ request, locals }) => {
     ]);
 
     // Calculate MS-01: Jakość generacji AI
-    const totalProposals = generationsResult.data?.reduce((sum, gen) => sum + (gen.proposals_count || 0), 0) || 0;
+    const totalProposals = generationsResult.data?.reduce((sum, gen) => sum + (gen.generated_count || 0), 0) || 0;
     const aiFullCount = aiFullResult.count || 0;
     const aiEditedCount = aiEditedResult.count || 0;
     const acceptedFlashcards = aiFullCount + aiEditedCount;
@@ -90,7 +90,11 @@ export const GET: APIRoute = async ({ request, locals }) => {
     // Additional insights
     const editRate = acceptedFlashcards > 0 ? (aiEditedCount / acceptedFlashcards) * 100 : 0;
     const generationsCount = generationsResult.data?.length || 0;
-    const averageProposalsPerGeneration = generationsCount > 0 ? totalProposals / generationsCount : 0;
+    // Calculate average only for successful generations (generated_count > 0)
+    const successfulGenerations = generationsResult.data?.filter((gen) => (gen.generated_count || 0) > 0) || [];
+    const successfulGenerationsCount = successfulGenerations.length;
+    const averageProposalsPerGeneration =
+      successfulGenerationsCount > 0 ? totalProposals / successfulGenerationsCount : 0;
 
     const stats: AIQualityStats = {
       // MS-01
