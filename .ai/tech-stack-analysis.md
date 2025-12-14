@@ -12,25 +12,25 @@ Wybrany stos technologiczny jest nowoczesny, spójny i doskonale dopasowany do w
 
 **Odpowiedź: Tak, zdecydowanie.**
 
-*   **Supabase (BaaS):** Eliminuje potrzebę budowania backendu od zera, dostarczając gotową bazę danych, autentykację i API.
-*   **Shadcn/ui:** Przyspiesza development UI dzięki bibliotece gotowych, dostępnych komponentów React.
-*   **Astro + React:** Pozwala na szybkie tworzenie wydajnych widoków, dodając interaktywność tylko tam, gdzie jest to konieczne.
+- **Supabase (BaaS):** Eliminuje potrzebę budowania backendu od zera, dostarczając gotową bazę danych, autentykację i API.
+- **Shadcn/ui:** Przyspiesza development UI dzięki bibliotece gotowych, dostępnych komponentów React.
+- **Astro + React:** Pozwala na szybkie tworzenie wydajnych widoków, dodając interaktywność tylko tam, gdzie jest to konieczne.
 
 ### 2. Czy rozwiązanie będzie skalowalne w miarę wzrostu projektu?
 
 **Odpowiedź: Tak.**
 
-*   **Baza danych:** Supabase opiera się na skalowalnym PostgreSQL.
-*   **Hosting:** Cloudflare Pages z Workers umożliwia łatwe skalowanie i globalną dystrybucję.
-*   **Frontend:** Architektura Astro, faworyzująca statyczne strony, jest z natury wysoce wydajna i odporna na duży ruch.
+- **Baza danych:** Supabase opiera się na skalowalnym PostgreSQL.
+- **Hosting:** Cloudflare Pages z Workers umożliwia łatwe skalowanie i globalną dystrybucję.
+- **Frontend:** Architektura Astro, faworyzująca statyczne strony, jest z natury wysoce wydajna i odporna na duży ruch.
 
 ### 3. Czy koszt utrzymania i rozwoju będzie akceptowalny?
 
 **Odpowiedź: Tak.**
 
-*   **Supabase:** Posiada darmowy plan, wystarczający na start. Koszty rosną w modelu "pay-as-you-go".
-*   **Openrouter.ai:** Umożliwia precyzyjną kontrolę nad wydatkami na AI i wybór najbardziej opłacalnych modeli.
-*   **Open Source:** Większość stosu (Astro, React, TS) jest darmowa, co eliminuje koszty licencyjne.
+- **Supabase:** Posiada darmowy plan, wystarczający na start. Koszty rosną w modelu "pay-as-you-go".
+- **Openrouter.ai:** Umożliwia precyzyjną kontrolę nad wydatkami na AI i wybór najbardziej opłacalnych modeli.
+- **Open Source:** Większość stosu (Astro, React, TS) jest darmowa, co eliminuje koszty licencyjne.
 
 ### 4. Czy potrzebujemy aż tak złożonego rozwiązania?
 
@@ -48,9 +48,9 @@ Alternatywy, takie jak budowa własnego backendu, znacząco zwiększyłyby czas 
 
 **Odpowiedź: Tak.**
 
-*   **Supabase:** Oferuje wbudowane, bezpieczne zarządzanie użytkownikami i dostępem do danych (m.in. przez Row Level Security).
-*   **CI/CD:** GitHub Actions zapewnia bezpieczne zarządzanie kluczami API.
-*   **Frontend:** Nowoczesne narzędzia i TypeScript pomagają chronić przed popularnymi atakami (np. XSS).
+- **Supabase:** Oferuje wbudowane, bezpieczne zarządzanie użytkownikami i dostępem do danych (m.in. przez Row Level Security).
+- **CI/CD:** GitHub Actions zapewnia bezpieczne zarządzanie kluczami API.
+- **Frontend:** Nowoczesne narzędzia i TypeScript pomagają chronić przed popularnymi atakami (np. XSS).
 
 ---
 
