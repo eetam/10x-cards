@@ -63,8 +63,8 @@ export default tseslint.config(
   reactConfig,
   eslintPluginAstro.configs["flat/recommended"],
   eslintPluginPrettier,
-  // Ignore generated files
+  // Ignore generated files and test outputs
   {
-    ignores: ["**/database.types.ts"],
+    ignores: ["**/database.types.ts", "**/test-results/**", "**/playwright-report/**", "**/dist/**"],
   }
 );

@@ -108,6 +108,10 @@ An AI-powered flashcard generation application that streamlines the creation of 
    # Optional: Use mock responses instead of real API calls (for development)
    OPENROUTER_USE_MOCK=true
 
+   # Optional: Service role key (bypasses RLS, used for admin operations)
+   # Only needed if you use DEFAULT_USER_ID or need to bypass RLS
+   # SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+
    # Optional: Default user ID for development (bypasses auth)
    # DEFAULT_USER_ID=your-test-user-uuid
    ```
@@ -115,6 +119,7 @@ An AI-powered flashcard generation application that streamlines the creation of 
    **Finding your Supabase keys:**
 
    If you're running Supabase locally with Docker:
+
    ```bash
    # Check your Supabase logs or Studio
    # Default local keys (if using standard Supabase local setup):
@@ -136,15 +141,21 @@ An AI-powered flashcard generation application that streamlines the creation of 
 
 ## Available Scripts
 
-| Script             | Description                                  |
-| ------------------ | -------------------------------------------- |
-| `npm run dev`      | Start the development server with hot reload |
-| `npm run build`    | Build the production-ready application       |
-| `npm run preview`  | Preview the production build locally         |
-| `npm run lint`     | Run ESLint to check code quality             |
-| `npm run lint:fix` | Automatically fix ESLint errors              |
-| `npm run format`   | Format code using Prettier                   |
-| `npm run astro`    | Run Astro CLI commands                       |
+| Script                   | Description                                  |
+| ------------------------ | -------------------------------------------- |
+| `npm run dev`            | Start the development server with hot reload |
+| `npm run build`          | Build the production-ready application       |
+| `npm run preview`        | Preview the production build locally         |
+| `npm run lint`           | Run ESLint to check code quality             |
+| `npm run lint:fix`       | Automatically fix ESLint errors              |
+| `npm run format`         | Format code using Prettier                   |
+| `npm run astro`          | Run Astro CLI commands                       |
+| `npm run test`           | Run unit tests with Vitest (watch mode)      |
+| `npm run test:run`       | Run unit tests once                          |
+| `npm run test:ui`        | Run unit tests with UI                       |
+| `npm run test:e2e`       | Run E2E tests with Playwright                |
+| `npm run test:e2e:ui`    | Run E2E tests with Playwright UI             |
+| `npm run test:e2e:debug` | Run E2E tests in debug mode                  |
 
 ### Development Workflow
 
@@ -152,6 +163,13 @@ The project includes pre-commit hooks via Husky and lint-staged to ensure code q
 
 - TypeScript/TSX/Astro files are automatically linted
 - JSON/CSS/Markdown files are automatically formatted
+
+### Testing
+
+The project includes both unit tests (Vitest) and E2E tests (Playwright):
+
+- **Unit Tests**: Located in `src/` with `*.test.ts` or `*.spec.ts` files
+- **E2E Tests**: Located in `e2e/` directory, see [e2e/README.md](e2e/README.md) for setup instructions
 
 ## Project Scope
 
@@ -206,11 +224,13 @@ This project is actively under development. The core features outlined in the PR
 
 ### Roadmap
 
-- [ ] User authentication system
-- [ ] AI flashcard generation
-- [ ] Manual flashcard CRUD operations
-- [ ] FSRS integration
-- [ ] Learning session interface
+- [x] User authentication system
+- [x] AI flashcard generation
+- [x] Manual flashcard CRUD operations
+- [x] FSRS integration
+- [x] Learning session interface
+- [x] E2E testing setup
+- [x] Unit testing setup
 - [ ] Production deployment
 
 ## License

@@ -30,10 +30,16 @@ export class GenerationPage {
    */
   async generateFlashcards(text: string) {
     await this.sourceTextArea.fill(text);
+
+    // Wait for button to be enabled before clicking
+    await this.submitButton.waitFor({ state: "visible" });
+
+    // Click and wait for navigation
+    const navigationPromise = this.page.waitForURL(/\/generations\/[a-f0-9-]+/, { timeout: 10000 });
     await this.submitButton.click();
 
     // Wait for redirect to generation review page
-    await this.page.waitForURL(/\/generations\/[a-f0-9-]+/);
+    await navigationPromise;
     await this.page.waitForLoadState("networkidle");
   }
 

@@ -1,86 +1,109 @@
+/* eslint-disable no-console */
 import { createClient } from "@supabase/supabase-js";
 
-/**
- * Teardown helper for cleaning up test data after E2E tests
- * Removes flashcards and generations created during test runs
- */
-
-/**
- * Clean up test data from Supabase
- * Should be called in global teardown or after test suite
- */
 export async function cleanupTestData() {
   const supabaseUrl = process.env.SUPABASE_URL || process.env.PUBLIC_SUPABASE_URL;
-  const supabaseKey = process.env.PUBLIC_SUPABASE_KEY;
+  // Use service role key if available (bypasses RLS, faster and more reliable)
+  // Fallback to anon key + auth if service role is not available
+  const supabaseKey =
+    process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_KEY || process.env.PUBLIC_SUPABASE_KEY;
   const testUserEmail = process.env.E2E_USERNAME;
-  const testUserPassword = process.env.E2E_PASSWORD;
+  const testUserId = process.env.E2E_USERNAME_ID;
 
   if (!supabaseUrl || !supabaseKey) {
     console.error("Supabase credentials not found in environment");
     return;
   }
 
-  if (!testUserEmail || !testUserPassword) {
-    console.error("Test user credentials not found in environment");
-    return;
-  }
-
-  const supabase = createClient(supabaseUrl, supabaseKey);
+  const supabase = createClient(supabaseUrl, supabaseKey, {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false,
+    },
+  });
 
   try {
-    // Sign in as test user to authenticate for RLS
-    const { error: signInError } = await supabase.auth.signInWithPassword({
-      email: testUserEmail,
-      password: testUserPassword,
-    });
+    let userId: string | undefined = testUserId;
 
-    if (signInError) {
-      console.error("Error signing in for teardown:", signInError);
-      throw signInError;
+    // If using anon key, we need to authenticate first
+    if (!process.env.SUPABASE_SERVICE_ROLE_KEY && !process.env.SUPABASE_KEY) {
+      if (!testUserEmail || !process.env.E2E_PASSWORD) {
+        console.error("Test user credentials not found in environment (required for anon key cleanup)");
+        return;
+      }
+
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: testUserEmail,
+        password: process.env.E2E_PASSWORD,
+      });
+
+      if (signInError) {
+        console.error("Error signing in for teardown:", signInError);
+        return;
+      }
+
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser();
+
+      if (userError || !user) {
+        console.error("Error getting user for teardown:", userError);
+        return;
+      }
+
+      userId = user.id;
     }
 
-    // Get test user ID
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
-
-    if (userError || !user) {
-      console.error("Error getting user for teardown:", userError);
+    if (!userId) {
+      console.error("User ID not available for teardown");
       return;
     }
 
-    console.log(`Starting teardown for user: ${user.id}`);
+    console.log(`Starting teardown for user: ${userId}`);
+
+    // First, check how many records exist before deletion
+    const { count: flashcardsBeforeCount } = await supabase
+      .from("flashcards")
+      .select("*", { count: "exact", head: true })
+      .eq("user_id", userId);
+
+    const { count: generationsBeforeCount } = await supabase
+      .from("generations")
+      .select("*", { count: "exact", head: true })
+      .eq("user_id", userId);
+
+    console.log(
+      `Found ${flashcardsBeforeCount || 0} flashcards and ${generationsBeforeCount || 0} generations to delete`
+    );
 
     // Delete flashcards (will cascade to related data)
-    const { error: flashcardsError, count: flashcardsCount } = await supabase
-      .from("flashcards")
-      .delete()
-      .eq("user_id", user.id);
+    const { error: flashcardsError } = await supabase.from("flashcards").delete().eq("user_id", userId);
 
     if (flashcardsError) {
       console.error("Error deleting flashcards:", flashcardsError);
     } else {
-      console.log(`Deleted ${flashcardsCount || 0} flashcards`);
+      console.log(`Deleted ${flashcardsBeforeCount || 0} flashcards`);
     }
 
     // Delete generations
-    const { error: generationsError, count: generationsCount } = await supabase
-      .from("generations")
-      .delete()
-      .eq("user_id", user.id);
+    const { error: generationsError } = await supabase.from("generations").delete().eq("user_id", userId);
 
     if (generationsError) {
       console.error("Error deleting generations:", generationsError);
     } else {
-      console.log(`Deleted ${generationsCount || 0} generations`);
+      console.log(`Deleted ${generationsBeforeCount || 0} generations`);
     }
 
-    // Sign out
-    await supabase.auth.signOut();
+    // Sign out if we signed in
+    if (!process.env.SUPABASE_SERVICE_ROLE_KEY && !process.env.SUPABASE_KEY) {
+      await supabase.auth.signOut();
+    }
 
     console.log("Teardown completed successfully");
   } catch (error) {
-    console.error("Unexpected error during teardown:", error);
+    // Don't throw - just log and continue with tests
+    // Network errors shouldn't block test execution
+    console.error("Unexpected error during teardown (continuing anyway):", error);
   }
 }

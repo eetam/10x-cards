@@ -7,11 +7,15 @@ export const EnvConfig = {
    * Get OpenRouter API configuration
    */
   getOpenRouterConfig() {
+    // Parse OPENROUTER_USE_MOCK correctly - string "false" should be false
+    const useMockValue = import.meta.env.OPENROUTER_USE_MOCK;
+    const useMock = useMockValue === "true" || useMockValue === true;
+
     return {
       apiKey: import.meta.env.OPENROUTER_API_KEY,
       baseUrl: "https://openrouter.ai/api/v1",
       timeout: 60000,
-      useMock: Boolean(import.meta.env.OPENROUTER_USE_MOCK),
+      useMock,
     };
   },
 

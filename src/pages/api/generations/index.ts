@@ -53,25 +53,36 @@ export const POST: APIRoute = async ({ request, locals }) => {
     if (defaultUserId) {
       userId = defaultUserId;
     } else {
-      // Normal authentication flow
+      // Normal authentication flow - use SSR client from middleware (locals.supabase)
       const authHeader = request.headers.get("authorization");
       const token = AuthUtils.extractBearerToken(authHeader);
 
-      if (!token) {
-        return ResponseUtils.createAuthErrorResponse("Authentication required");
+      if (token) {
+        // Verify JWT token with SSR client (can handle tokens)
+        const { user, error: authError } = await AuthUtils.verifyToken(locals.supabase, token);
+
+        if (authError || !user) {
+          return ResponseUtils.createAuthErrorResponse(authError?.message || "Invalid or expired token");
+        }
+
+        userId = user.id;
+      } else {
+        // Check session from cookies
+        const {
+          data: { session },
+        } = await locals.supabase.auth.getSession();
+
+        if (!session?.user?.id) {
+          return ResponseUtils.createAuthErrorResponse("Authentication required");
+        }
+
+        userId = session.user.id;
       }
 
-      // Verify JWT token with Supabase
-      const { user, error: authError } = await AuthUtils.verifyToken(locals.supabase, token);
-
-      if (authError || !user) {
-        return ResponseUtils.createAuthErrorResponse(authError?.message || "Invalid or expired token");
-      }
-
-      userId = user.id;
-
-      // Check user permissions
-      const { allowed, error: permissionError } = await AuthUtils.checkGenerationPermission(locals.supabase, user.id);
+      // Check user permissions (requires service role client for admin API)
+      const { getServerSupabaseClient } = await import("../../../db/supabase.server.ts");
+      const serviceRoleClient = getServerSupabaseClient();
+      const { allowed, error: permissionError } = await AuthUtils.checkGenerationPermission(serviceRoleClient, userId);
 
       if (!allowed) {
         return ResponseUtils.createErrorResponse(
@@ -152,8 +163,9 @@ export const POST: APIRoute = async ({ request, locals }) => {
     };
 
     return ResponseUtils.createSuccessResponse(response, 201);
-  } catch {
-    return ResponseUtils.createInternalErrorResponse();
+  } catch (error) {
+    console.error("[POST /api/generations] Error:", error);
+    return ResponseUtils.createInternalErrorResponse(error instanceof Error ? error.message : "Unknown error occurred");
   }
 };
 
@@ -178,22 +190,31 @@ export const GET: APIRoute = async ({ request, locals }) => {
     if (defaultUserId) {
       userId = defaultUserId;
     } else {
-      // Normal authentication flow
+      // Normal authentication flow - use SSR client from middleware (locals.supabase)
       const authHeader = request.headers.get("authorization");
       const token = AuthUtils.extractBearerToken(authHeader);
 
-      if (!token) {
-        return ResponseUtils.createAuthErrorResponse("Authentication required");
+      if (token) {
+        // Verify JWT token with SSR client (can handle tokens)
+        const { user, error: authError } = await AuthUtils.verifyToken(locals.supabase, token);
+
+        if (authError || !user) {
+          return ResponseUtils.createAuthErrorResponse(authError?.message || "Invalid or expired token");
+        }
+
+        userId = user.id;
+      } else {
+        // Check session from cookies
+        const {
+          data: { session },
+        } = await locals.supabase.auth.getSession();
+
+        if (!session?.user?.id) {
+          return ResponseUtils.createAuthErrorResponse("Authentication required");
+        }
+
+        userId = session.user.id;
       }
-
-      // Verify JWT token with Supabase
-      const { user, error: authError } = await AuthUtils.verifyToken(locals.supabase, token);
-
-      if (authError || !user) {
-        return ResponseUtils.createAuthErrorResponse(authError?.message || "Invalid or expired token");
-      }
-
-      userId = user.id;
     }
 
     // Step 2: Validate query parameters

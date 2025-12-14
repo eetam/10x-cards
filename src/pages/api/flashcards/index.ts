@@ -76,7 +76,6 @@ const CreateFlashcardSchema = z
  */
 export const POST: APIRoute = async ({ request, locals }) => {
   try {
-    // Step 1: Authentication validation
     const defaultUserId = EnvConfig.getDefaultUserId();
 
     let userId: string;
@@ -84,22 +83,17 @@ export const POST: APIRoute = async ({ request, locals }) => {
     if (defaultUserId) {
       userId = defaultUserId;
     } else {
-      // Normal authentication flow
-      const authHeader = request.headers.get("authorization");
-      const token = AuthUtils.extractBearerToken(authHeader);
+      // Normal authentication flow - use SSR client from middleware (locals.supabase)
+      const { userId: authenticatedUserId, error: authError } = await AuthUtils.getUserIdFromRequest(
+        request,
+        locals.supabase
+      );
 
-      if (!token) {
-        return ResponseUtils.createAuthErrorResponse("Authentication required");
+      if (authError || !authenticatedUserId) {
+        return ResponseUtils.createAuthErrorResponse(authError?.message || "Authentication required");
       }
 
-      // Verify JWT token with Supabase
-      const { user, error: authError } = await AuthUtils.verifyToken(locals.supabase, token);
-
-      if (authError || !user) {
-        return ResponseUtils.createAuthErrorResponse(authError?.message || "Invalid or expired token");
-      }
-
-      userId = user.id;
+      userId = authenticatedUserId;
     }
 
     // Step 2: Validate input data
@@ -229,7 +223,6 @@ export const POST: APIRoute = async ({ request, locals }) => {
  */
 export const GET: APIRoute = async ({ request, locals }) => {
   try {
-    // Step 1: Authentication validation
     const defaultUserId = EnvConfig.getDefaultUserId();
 
     let userId: string;
@@ -237,22 +230,17 @@ export const GET: APIRoute = async ({ request, locals }) => {
     if (defaultUserId) {
       userId = defaultUserId;
     } else {
-      // Normal authentication flow
-      const authHeader = request.headers.get("authorization");
-      const token = AuthUtils.extractBearerToken(authHeader);
+      // Normal authentication flow - use SSR client from middleware (locals.supabase)
+      const { userId: authenticatedUserId, error: authError } = await AuthUtils.getUserIdFromRequest(
+        request,
+        locals.supabase
+      );
 
-      if (!token) {
-        return ResponseUtils.createAuthErrorResponse("Authentication required");
+      if (authError || !authenticatedUserId) {
+        return ResponseUtils.createAuthErrorResponse(authError?.message || "Authentication required");
       }
 
-      // Verify JWT token with Supabase
-      const { user, error: authError } = await AuthUtils.verifyToken(locals.supabase, token);
-
-      if (authError || !user) {
-        return ResponseUtils.createAuthErrorResponse(authError?.message || "Invalid or expired token");
-      }
-
-      userId = user.id;
+      userId = authenticatedUserId;
     }
 
     // Step 2: Validate query parameters
