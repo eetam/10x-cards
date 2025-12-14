@@ -12,22 +12,25 @@ Create a new Supabase project for E2E tests at https://supabase.com/dashboard/pr
 
 ### 2. Configure Environment
 
-Copy `.env.test.example` to `.env.test` and fill in your values:
+Copy `e2e/.env.test.example` to `.env.test` in the root directory:
 
 ```bash
-cp .env.test.example .env.test
+cp e2e/.env.test.example .env.test
 ```
 
-Update `.env.test` with:
+The example file contains all required variables with example values. Update `.env.test` with your actual test Supabase project values:
 
 - `SUPABASE_URL`: Your test project URL (from Supabase Dashboard → Connect)
+- `PUBLIC_SUPABASE_URL`: Same as SUPABASE_URL
+- `SUPABASE_ACCESS_TOKEN`: Your Supabase access token (for automatic migrations)
+- `SUPABASE_KEY`: Your anon key (used for fallback)
 - `PUBLIC_SUPABASE_KEY`: Your anon/public key
-- `SUPABASE_KEY`: Your anon key (same as PUBLIC_SUPABASE_KEY, used for fallback)
-- `SUPABASE_SERVICE_ROLE_KEY`: (Optional) Service role key for faster teardown cleanup
 - `E2E_USERNAME`: Test user email (create manually in Supabase Dashboard → Authentication → Users)
 - `E2E_PASSWORD`: Test user password
-- `E2E_USERNAME_ID`: (Optional) Test user ID for direct cleanup without sign-in
-- `OPENROUTER_USE_MOCK=true`: Use mock AI responses for faster, deterministic tests
+- `E2E_USERNAME_ID`: Test user ID (for direct cleanup without sign-in)
+- `OPENROUTER_API_KEY`: Your OpenRouter API key (or use mock mode)
+- `OPENROUTER_USE_MOCK`: Set to `true` for faster, deterministic tests
+- `BASE_URL`: Base URL for E2E tests (default: http://localhost:4321)
 
 ### 3. Create Test User
 
