@@ -289,13 +289,15 @@ export class GenerationService {
   /**
    * Log generation error
    * Uses service role client to bypass RLS for reliable error logging
+   * @param getServerClient - Optional function to get server Supabase client (for testing)
    */
   async logGenerationError(
     userId: string,
     model: string,
     sourceText: string,
     errorCode: string,
-    errorMessage: string
+    errorMessage: string,
+    getServerClient?: () => SupabaseClient
   ): Promise<void> {
     try {
       const sourceTextHash = TextUtils.generateTextHash(sourceText);
@@ -312,8 +314,9 @@ export class GenerationService {
 
       // Use service role client to bypass RLS for error logging
       // This ensures errors are always logged even if RLS blocks the regular client
-      const { getServerSupabaseClient } = await import("../../db/supabase.server");
-      const serviceRoleClient = getServerSupabaseClient();
+      const serviceRoleClient = getServerClient
+        ? getServerClient()
+        : (await import("../../db/supabase.server")).getServerSupabaseClient();
 
       const { error } = await serviceRoleClient.from("generation_error_logs").insert(errorLog);
 

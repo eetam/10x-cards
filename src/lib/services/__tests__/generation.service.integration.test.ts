@@ -2,6 +2,13 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { GenerationService } from "../generation.service";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
+// Mock server Supabase client for error logging (used in logGenerationError tests)
+const mockServerSupabaseClient = {
+  from: vi.fn(() => ({
+    insert: vi.fn(),
+  })),
+} as unknown as SupabaseClient;
+
 // Mock Supabase client
 const mockSupabase = {
   from: vi.fn(() => ({
@@ -184,19 +191,26 @@ describe("GenerationService Integration Tests", () => {
   describe("logGenerationError", () => {
     it("should log generation error successfully", async () => {
       const mockInsert = vi.fn().mockResolvedValue({ error: null });
-      vi.mocked(mockSupabase.from).mockReturnValue({
+      const mockFrom = vi.fn().mockReturnValue({
         insert: mockInsert,
-      } as unknown as ReturnType<SupabaseClient["from"]>);
+      });
 
+      const mockClient = {
+        ...mockServerSupabaseClient,
+        from: mockFrom,
+      } as unknown as SupabaseClient;
+
+      // Use dependency injection to provide the mock client
       await generationService.logGenerationError(
         "user-123",
         "openai/gpt-4o-mini",
         "Test source text",
         "AI_ERROR",
-        "AI service returned invalid response"
+        "AI service returned invalid response",
+        () => mockClient
       );
 
-      expect(mockSupabase.from).toHaveBeenCalledWith("generation_error_logs");
+      expect(mockFrom).toHaveBeenCalledWith("generation_error_logs");
       expect(mockInsert).toHaveBeenCalledWith(
         expect.objectContaining({
           user_id: "user-123",
@@ -208,16 +222,31 @@ describe("GenerationService Integration Tests", () => {
     });
 
     it("should handle error logging failure gracefully", async () => {
-      const mockInsert = vi.fn().mockRejectedValue(new Error("Database error"));
-      vi.mocked(mockSupabase.from).mockReturnValue({
+      const mockInsert = vi.fn().mockResolvedValue({ error: { message: "Database error" } });
+      const mockFrom = vi.fn().mockReturnValue({
         insert: mockInsert,
-      } as unknown as ReturnType<SupabaseClient["from"]>);
+      });
 
+      const mockClient = {
+        ...mockServerSupabaseClient,
+        from: mockFrom,
+      } as unknown as SupabaseClient;
+
+      // Use dependency injection to provide the mock client
       // Should not throw even when database insert fails
       await expect(
-        generationService.logGenerationError("user-123", "openai/gpt-4o-mini", "Test text", "ERROR", "Test error")
+        generationService.logGenerationError(
+          "user-123",
+          "openai/gpt-4o-mini",
+          "Test text",
+          "ERROR",
+          "Test error",
+          () => mockClient
+        )
       ).resolves.not.toThrow();
 
+      // Verify that from was called with the correct table name
+      expect(mockFrom).toHaveBeenCalledWith("generation_error_logs");
       // Verify that insert was attempted
       expect(mockInsert).toHaveBeenCalled();
     });
