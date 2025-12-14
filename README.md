@@ -19,7 +19,7 @@ An AI-powered flashcard generation application that streamlines the creation of 
 ### Key Features
 
 - **AI-Powered Generation**: Paste text (1,000-10,000 characters) and let AI create flashcards automatically
-- **Smart Review System**: Uses FSRS (Free Spaced Repetition Scheduler) algorithm for optimal learning
+- **Smart Review System**: Uses FSRS (Free Spaced Repetition Scheduler) algorithm - simplified implementation for optimal learning
 - **Flexible Management**: Accept, edit, or reject AI-generated suggestions
 - **Manual Creation**: Create custom flashcards manually when needed
 - **User Account Management**: Secure authentication with email/password
@@ -58,7 +58,7 @@ An AI-powered flashcard generation application that streamlines the creation of 
 ### CI/CD & Hosting
 
 - **GitHub Actions** - Automated CI/CD pipelines
-- **DigitalOcean** - Production hosting via Docker containers
+- **Cloudflare Pages** - Production hosting via Cloudflare Workers/Pages
 
 ## Getting Started Locally
 
@@ -199,7 +199,7 @@ The project includes both unit tests (Vitest) and E2E tests (Playwright):
 
 #### Spaced Repetition Learning
 
-- ✅ FSRS algorithm integration
+- ✅ FSRS algorithm integration (simplified version for MVP)
 - ✅ Daily review sessions
 - ✅ Flashcard rating system
 - ✅ Session summary
@@ -231,7 +231,7 @@ This project is actively under development. The core features outlined in the PR
 - [x] Learning session interface
 - [x] E2E testing setup
 - [x] Unit testing setup
-- [ ] Production deployment
+- [x] Production deployment
 
 ## License
 

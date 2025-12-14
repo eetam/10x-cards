@@ -21,7 +21,7 @@ Wybrany stos technologiczny jest nowoczesny, spójny i doskonale dopasowany do w
 **Odpowiedź: Tak.**
 
 *   **Baza danych:** Supabase opiera się na skalowalnym PostgreSQL.
-*   **Hosting:** DigitalOcean z Dockerem umożliwia łatwe skalowanie horyzontalne.
+*   **Hosting:** Cloudflare Pages z Workers umożliwia łatwe skalowanie i globalną dystrybucję.
 *   **Frontend:** Architektura Astro, faworyzująca statyczne strony, jest z natury wysoce wydajna i odporna na duży ruch.
 
 ### 3. Czy koszt utrzymania i rozwoju będzie akceptowalny?

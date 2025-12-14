@@ -308,7 +308,7 @@ export function GenerationReviewView({ generationId }: GenerationReviewViewProps
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-8 sm:pb-12 md:pb-16">
       <GenerationHeader generation={generation} />
       <div className="flex items-center justify-between">
         <ProposalsCounter total={proposals.length} accepted={acceptedCount} />

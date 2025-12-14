@@ -20,7 +20,7 @@ export function DashboardActions({ isAuthenticated }: DashboardActionsProps) {
   };
 
   return (
-    <div className="space-y-2 sm:space-y-3">
+    <div className="space-y-2 sm:space-y-3 pb-6 sm:pb-8 md:pb-12">
       <h2 className="text-lg sm:text-xl font-semibold">Szybkie akcje</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
         <PrimaryActionButton label="Generuj fiszki" href={getRedirectUrl("/generate")} disabled={!isAuthenticated} />
