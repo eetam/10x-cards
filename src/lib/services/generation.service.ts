@@ -329,7 +329,10 @@ export class GenerationService {
       }
     } catch (error) {
       // Error logging failed - log to console as fallback
-      console.error("[GenerationService] Error logging failed:", error instanceof Error ? error.message : "Unknown error");
+      console.error(
+        "[GenerationService] Error logging failed:",
+        error instanceof Error ? error.message : "Unknown error"
+      );
       console.error("[GenerationService] Error details:", {
         userId,
         model,

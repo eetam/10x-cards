@@ -242,7 +242,7 @@ export function StudySession() {
         {!isRevealed ? (
           <Button size="lg" onClick={handleReveal} className="min-w-[200px]">
             Pokaż odpowiedź
-            <span className="ml-2 text-xs opacity-70">(Spacja)</span>
+            <span className="ml-2 text-xs opacity-70 hidden sm:inline">(Spacja)</span>
           </Button>
         ) : (
           <RatingButtons onRating={handleRating} isSubmitting={reviewMutation.isPending} />

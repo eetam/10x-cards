@@ -372,10 +372,7 @@ export function AIQualityStats() {
                     <h4 className="text-sm font-semibold mb-3">Ostatnie błędy (max 10)</h4>
                     <div className="space-y-2 max-h-64 overflow-y-auto">
                       {errorsData.errors.slice(0, 10).map((error) => (
-                        <div
-                          key={error.id}
-                          className="p-3 bg-muted/50 rounded-lg border border-border text-sm"
-                        >
+                        <div key={error.id} className="p-3 bg-muted/50 rounded-lg border border-border text-sm">
                           <div className="flex items-start justify-between gap-2">
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-2 mb-1">
