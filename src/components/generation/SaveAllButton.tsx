@@ -18,14 +18,18 @@ export function SaveAllButton({ acceptedCount, isSaving, onSave }: SaveAllButton
   const isDisabled = acceptedCount === 0 || isSaving;
 
   return (
-    <Button onClick={onSave} disabled={isDisabled} size="lg" data-testid="save-all-button">
+    <Button onClick={onSave} disabled={isDisabled} size="lg" className="w-full sm:w-auto" data-testid="save-all-button">
       {isSaving ? (
         <>
           <Loader2 className="mr-2 size-4 animate-spin" />
-          Zapisywanie...
+          <span className="hidden sm:inline">Zapisywanie...</span>
+          <span className="sm:hidden">Zapisywanie</span>
         </>
       ) : (
-        `Zapisz wszystkie zaakceptowane (${acceptedCount})`
+        <>
+          <span className="hidden sm:inline">Zapisz wszystkie zaakceptowane ({acceptedCount})</span>
+          <span className="sm:hidden">Zapisz ({acceptedCount})</span>
+        </>
       )}
     </Button>
   );

@@ -288,6 +288,7 @@ export class GenerationService {
 
   /**
    * Log generation error
+   * Uses service role client to bypass RLS for reliable error logging
    */
   async logGenerationError(
     userId: string,
@@ -309,9 +310,32 @@ export class GenerationService {
         error_message: errorMessage,
       };
 
-      await this.supabase.from("generation_error_logs").insert(errorLog);
-    } catch {
-      // Error logging failed - non-critical
+      // Use service role client to bypass RLS for error logging
+      // This ensures errors are always logged even if RLS blocks the regular client
+      const { getServerSupabaseClient } = await import("../../db/supabase.server");
+      const serviceRoleClient = getServerSupabaseClient();
+
+      const { error } = await serviceRoleClient.from("generation_error_logs").insert(errorLog);
+
+      if (error) {
+        // Log to console as fallback if database insert fails
+        console.error("[GenerationService] Failed to log error to database:", error.message);
+        console.error("[GenerationService] Error details:", {
+          userId,
+          model,
+          errorCode,
+          errorMessage: errorMessage.substring(0, 200), // Truncate long messages
+        });
+      }
+    } catch (error) {
+      // Error logging failed - log to console as fallback
+      console.error("[GenerationService] Error logging failed:", error instanceof Error ? error.message : "Unknown error");
+      console.error("[GenerationService] Error details:", {
+        userId,
+        model,
+        errorCode,
+        errorMessage: errorMessage.substring(0, 200),
+      });
     }
   }
 
@@ -326,9 +350,17 @@ export class GenerationService {
     try {
       // Validate model
       if (!(command.model in AI_MODELS)) {
+        const error = new Error(`Unsupported model: ${command.model}`);
+        await this.logGenerationError(
+          command.userId,
+          command.model,
+          command.sourceText,
+          "UNSUPPORTED_MODEL",
+          error.message
+        );
         return {
           proposals: [],
-          error: new Error(`Unsupported model: ${command.model}`),
+          error,
         };
       }
 
@@ -340,9 +372,17 @@ export class GenerationService {
       const aiResponse = await this.callOpenRouterAPI(prompt, command.model, modelConfig);
 
       if (!aiResponse) {
+        const error = new Error("Failed to get response from AI service");
+        await this.logGenerationError(
+          command.userId,
+          command.model,
+          command.sourceText,
+          "AI_SERVICE_ERROR",
+          error.message
+        );
         return {
           proposals: [],
-          error: new Error("Failed to get response from AI service"),
+          error,
         };
       }
 
@@ -350,9 +390,11 @@ export class GenerationService {
       const proposals = TextUtils.parseFlashcardProposals(aiResponse);
 
       if (proposals.length === 0) {
+        const error = new Error("No valid flashcard proposals generated");
+        await this.logGenerationError(command.userId, command.model, command.sourceText, "NO_PROPOSALS", error.message);
         return {
           proposals: [],
-          error: new Error("No valid flashcard proposals generated"),
+          error,
         };
       }
 

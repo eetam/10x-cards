@@ -4,7 +4,7 @@ import * as React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card";
 import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
-import { AlertCircle, TrendingUp, CheckCircle2, XCircle, Edit3, Sparkles } from "lucide-react";
+import { AlertCircle, TrendingUp, CheckCircle2, XCircle, Edit3, Sparkles, AlertTriangle } from "lucide-react";
 import { apiClient } from "../../lib/api/client";
 
 interface AIQualityStats {
@@ -30,10 +30,36 @@ interface AIQualityStats {
   editRate: number;
   generationsCount: number;
   averageProposalsPerGeneration: number;
+
+  // Error tracking
+  totalErrors: number;
+  errorRate: number;
+}
+
+interface GenerationError {
+  id: number;
+  userId: string;
+  model: string;
+  sourceTextHash: string;
+  sourceTextLength: number;
+  errorCode: string | null;
+  errorMessage: string | null;
+  createdAt: string;
+}
+
+interface GenerationErrorsResponse {
+  errors: GenerationError[];
+  totalCount: number;
+  errorsByCode: Record<string, number>;
+  errorsByModel: Record<string, number>;
 }
 
 async function fetchAIQualityStats(): Promise<AIQualityStats> {
   return apiClient.get<AIQualityStats>("/api/admin/ai-quality-stats");
+}
+
+async function fetchGenerationErrors(): Promise<GenerationErrorsResponse> {
+  return apiClient.get<GenerationErrorsResponse>("/api/admin/generation-errors");
 }
 
 interface ProgressBarProps {
@@ -109,6 +135,16 @@ export function AIQualityStats() {
     refetchInterval: 60000, // Refresh every minute
   });
 
+  const {
+    data: errorsData,
+    isLoading: errorsLoading,
+    isError: errorsError,
+  } = useQuery({
+    queryKey: ["generation-errors"],
+    queryFn: fetchGenerationErrors,
+    refetchInterval: 60000, // Refresh every minute
+  });
+
   if (isLoading) {
     return (
       <div className="space-y-6">
@@ -143,7 +179,7 @@ export function AIQualityStats() {
       </div>
 
       {/* Quick Stats Grid */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
         <StatCard
           title="Wszystkie propozycje"
           value={stats.totalProposals}
@@ -175,6 +211,14 @@ export function AIQualityStats() {
           icon={Sparkles}
           iconColor="text-[#ec4899]"
           bgColor="bg-pink-50 dark:bg-pink-950"
+        />
+        <StatCard
+          title="Błędy generacji"
+          value={stats.totalErrors}
+          description={`${stats.errorRate.toFixed(1)}% wskaźnik błędów`}
+          icon={AlertTriangle}
+          iconColor="text-orange-600"
+          bgColor="bg-orange-50 dark:bg-orange-950"
         />
       </div>
 
@@ -272,6 +316,143 @@ export function AIQualityStats() {
               </div>
             </div>
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Error Tracking */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <AlertTriangle className="size-5 text-orange-600" />
+            Śledzenie błędów generacji
+          </CardTitle>
+          <CardDescription>
+            Monitorowanie błędów występujących podczas procesu generowania fiszek przez AI
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-orange-50 dark:bg-orange-950">
+                <AlertTriangle className="size-4 text-orange-600" />
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Wszystkie błędy</p>
+                <p className="text-xl font-bold">{stats.totalErrors}</p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-red-50 dark:bg-red-950">
+                <XCircle className="size-4 text-red-600" />
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Wskaźnik błędów</p>
+                <p className="text-xl font-bold">{stats.errorRate.toFixed(2)}%</p>
+              </div>
+            </div>
+          </div>
+
+          {errorsLoading ? (
+            <div className="animate-pulse space-y-2">
+              <div className="h-4 bg-muted rounded w-3/4" />
+              <div className="h-4 bg-muted rounded w-1/2" />
+            </div>
+          ) : errorsError || !errorsData ? (
+            <Alert variant="destructive">
+              <AlertCircle className="size-4" />
+              <AlertTitle>Błąd</AlertTitle>
+              <AlertDescription>Nie udało się pobrać szczegółowych informacji o błędach.</AlertDescription>
+            </Alert>
+          ) : (
+            <>
+              {errorsData.errors.length > 0 && (
+                <div className="pt-4 border-t space-y-4">
+                  <div>
+                    <h4 className="text-sm font-semibold mb-3">Ostatnie błędy (max 10)</h4>
+                    <div className="space-y-2 max-h-64 overflow-y-auto">
+                      {errorsData.errors.slice(0, 10).map((error) => (
+                        <div
+                          key={error.id}
+                          className="p-3 bg-muted/50 rounded-lg border border-border text-sm"
+                        >
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 mb-1">
+                                <span className="font-medium text-xs text-muted-foreground">
+                                  {new Date(error.createdAt).toLocaleString("pl-PL")}
+                                </span>
+                                <span className="px-2 py-0.5 bg-background rounded text-xs font-mono">
+                                  {error.model}
+                                </span>
+                                {error.errorCode && (
+                                  <span className="px-2 py-0.5 bg-orange-100 dark:bg-orange-900 rounded text-xs">
+                                    {error.errorCode}
+                                  </span>
+                                )}
+                              </div>
+                              {error.errorMessage && (
+                                <p className="text-xs text-muted-foreground line-clamp-2">{error.errorMessage}</p>
+                              )}
+                              <p className="text-xs text-muted-foreground mt-1">
+                                Długość tekstu: {error.sourceTextLength} znaków
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {(Object.keys(errorsData.errorsByCode).length > 0 ||
+                    Object.keys(errorsData.errorsByModel).length > 0) && (
+                    <div className="grid gap-4 md:grid-cols-2 pt-4 border-t">
+                      {Object.keys(errorsData.errorsByCode).length > 0 && (
+                        <div>
+                          <h4 className="text-sm font-semibold mb-2">Błędy według kodu</h4>
+                          <div className="space-y-1">
+                            {Object.entries(errorsData.errorsByCode)
+                              .sort(([, a], [, b]) => b - a)
+                              .map(([code, count]) => (
+                                <div key={code} className="flex justify-between text-sm">
+                                  <span className="text-muted-foreground">{code}</span>
+                                  <span className="font-medium">{count}</span>
+                                </div>
+                              ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {Object.keys(errorsData.errorsByModel).length > 0 && (
+                        <div>
+                          <h4 className="text-sm font-semibold mb-2">Błędy według modelu</h4>
+                          <div className="space-y-1">
+                            {Object.entries(errorsData.errorsByModel)
+                              .sort(([, a], [, b]) => b - a)
+                              .map(([model, count]) => (
+                                <div key={model} className="flex justify-between text-sm">
+                                  <span className="text-muted-foreground font-mono text-xs">{model}</span>
+                                  <span className="font-medium">{count}</span>
+                                </div>
+                              ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {errorsData.errors.length === 0 && (
+                <div className="pt-4 border-t">
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <CheckCircle2 className="size-4 text-green-600" />
+                    <span>Brak błędów w ostatnich generacjach</span>
+                  </div>
+                </div>
+              )}
+            </>
+          )}
         </CardContent>
       </Card>
     </div>

@@ -28,6 +28,10 @@ interface AIQualityStats {
   editRate: number; // percentage of AI proposals that were edited
   generationsCount: number;
   averageProposalsPerGeneration: number;
+
+  // Error tracking
+  totalErrors: number;
+  errorRate: number; // percentage of generations that resulted in errors
 }
 
 /**
@@ -52,22 +56,26 @@ export const GET: APIRoute = async ({ request, locals }) => {
     }
 
     // Fetch all necessary data in parallel
-    const [generationsResult, flashcardsResult, aiFullResult, aiEditedResult, manualResult] = await Promise.all([
-      // Get all generations with generated_count (number of proposals generated)
-      locals.supabase.from("generations").select("generated_count"),
+    const [generationsResult, flashcardsResult, aiFullResult, aiEditedResult, manualResult, errorLogsResult] =
+      await Promise.all([
+        // Get all generations with generated_count (number of proposals generated)
+        locals.supabase.from("generations").select("generated_count"),
 
-      // Get total flashcards count
-      locals.supabase.from("flashcards").select("id", { count: "exact", head: true }),
+        // Get total flashcards count
+        locals.supabase.from("flashcards").select("id", { count: "exact", head: true }),
 
-      // Get ai-full flashcards
-      locals.supabase.from("flashcards").select("id", { count: "exact", head: true }).eq("source", "ai-full"),
+        // Get ai-full flashcards
+        locals.supabase.from("flashcards").select("id", { count: "exact", head: true }).eq("source", "ai-full"),
 
-      // Get ai-edited flashcards
-      locals.supabase.from("flashcards").select("id", { count: "exact", head: true }).eq("source", "ai-edited"),
+        // Get ai-edited flashcards
+        locals.supabase.from("flashcards").select("id", { count: "exact", head: true }).eq("source", "ai-edited"),
 
-      // Get manual flashcards
-      locals.supabase.from("flashcards").select("id", { count: "exact", head: true }).eq("source", "manual"),
-    ]);
+        // Get manual flashcards
+        locals.supabase.from("flashcards").select("id", { count: "exact", head: true }).eq("source", "manual"),
+
+        // Get error logs count
+        locals.supabase.from("generation_error_logs").select("id", { count: "exact", head: true }),
+      ]);
 
     // Calculate MS-01: Jakość generacji AI
     const totalProposals = generationsResult.data?.reduce((sum, gen) => sum + (gen.generated_count || 0), 0) || 0;
@@ -96,6 +104,10 @@ export const GET: APIRoute = async ({ request, locals }) => {
     const averageProposalsPerGeneration =
       successfulGenerationsCount > 0 ? totalProposals / successfulGenerationsCount : 0;
 
+    // Error tracking
+    const totalErrors = errorLogsResult.count || 0;
+    const errorRate = generationsCount > 0 ? (totalErrors / generationsCount) * 100 : 0;
+
     const stats: AIQualityStats = {
       // MS-01
       totalProposals,
@@ -119,6 +131,10 @@ export const GET: APIRoute = async ({ request, locals }) => {
       editRate: Math.round(editRate * 100) / 100,
       generationsCount,
       averageProposalsPerGeneration: Math.round(averageProposalsPerGeneration * 100) / 100,
+
+      // Error tracking
+      totalErrors,
+      errorRate: Math.round(errorRate * 100) / 100,
     };
 
     return ResponseUtils.createSuccessResponse(stats, 200);

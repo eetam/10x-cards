@@ -139,6 +139,14 @@ export const POST: APIRoute = async ({ request, locals }) => {
     const { generationId, error: createError } = await generationService.createGeneration(userId, sanitizedText, model);
 
     if (createError) {
+      // Log error for database creation failure
+      await generationService.logGenerationError(
+        userId,
+        model,
+        sanitizedText,
+        "GENERATION_CREATE_ERROR",
+        createError.message
+      );
       return ResponseUtils.createInternalErrorResponse(`Failed to create generation: ${createError.message}`);
     }
 
@@ -151,6 +159,8 @@ export const POST: APIRoute = async ({ request, locals }) => {
     });
 
     if (generationError) {
+      // Error is already logged in generateFlashcards, but ensure it's logged if somehow missed
+      // Note: generateFlashcards should log all errors, but this is a safety net
       return ResponseUtils.createInternalErrorResponse(`Failed to generate flashcards: ${generationError.message}`);
     }
 
