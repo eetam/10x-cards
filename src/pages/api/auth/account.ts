@@ -69,9 +69,12 @@ export const DELETE: APIRoute = async ({ request, locals }) => {
       return ResponseUtils.createErrorResponse("Nieprawidłowe hasło", "INVALID_PASSWORD", 400, "password");
     }
 
-    // Delete user account using admin API
-    // Note: This requires service role key or proper RLS policies
-    const { error: deleteError } = await locals.supabase.auth.admin.deleteUser(user.id);
+    // Use service role client to delete user account (bypasses RLS)
+    // CASCADE will automatically delete all related data (flashcards, generations, error logs)
+    const { getServerSupabaseClient } = await import("../../../db/supabase.server");
+    const adminClient = getServerSupabaseClient();
+
+    const { error: deleteError } = await adminClient.auth.admin.deleteUser(user.id);
 
     if (deleteError) {
       console.error("[Delete Account API] Error:", deleteError);

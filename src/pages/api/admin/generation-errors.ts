@@ -26,6 +26,7 @@ interface GenerationErrorsResponse {
 /**
  * GET /api/admin/generation-errors
  * Returns generation error logs for monitoring and debugging
+ * Uses service role client to bypass RLS and show errors for all users
  * Available to all authenticated users (hidden endpoint, no UI link)
  */
 export const GET: APIRoute = async ({ request, locals }) => {
@@ -33,7 +34,7 @@ export const GET: APIRoute = async ({ request, locals }) => {
     const defaultUserId = EnvConfig.getDefaultUserId();
 
     if (!defaultUserId) {
-      // Normal authentication flow - use SSR client from middleware (locals.supabase)
+      // Normal authentication flow - verify user is authenticated
       const { userId: authenticatedUserId, error: authError } = await AuthUtils.getUserIdFromRequest(
         request,
         locals.supabase
@@ -44,8 +45,12 @@ export const GET: APIRoute = async ({ request, locals }) => {
       }
     }
 
+    // Use service role client to bypass RLS and get errors for all users
+    const { getServerSupabaseClient } = await import("../../../db/supabase.server");
+    const adminClient = getServerSupabaseClient();
+
     // Fetch error logs
-    const { data: errorLogs, error: fetchError } = await locals.supabase
+    const { data: errorLogs, error: fetchError } = await adminClient
       .from("generation_error_logs")
       .select("*")
       .order("created_at", { ascending: false })
@@ -82,7 +87,7 @@ export const GET: APIRoute = async ({ request, locals }) => {
     });
 
     // Get total count
-    const { count: totalCount } = await locals.supabase
+    const { count: totalCount } = await adminClient
       .from("generation_error_logs")
       .select("*", { count: "exact", head: true });
 

@@ -37,6 +37,7 @@ interface AIQualityStats {
 /**
  * GET /api/admin/ai-quality-stats
  * Returns AI quality statistics for MS-01 and MS-02 metrics
+ * Uses service role client to bypass RLS and show stats for all users
  * Available to all authenticated users (hidden endpoint, no UI link)
  */
 export const GET: APIRoute = async ({ request, locals }) => {
@@ -44,7 +45,7 @@ export const GET: APIRoute = async ({ request, locals }) => {
     const defaultUserId = EnvConfig.getDefaultUserId();
 
     if (!defaultUserId) {
-      // Normal authentication flow - use SSR client from middleware (locals.supabase)
+      // Normal authentication flow - verify user is authenticated
       const { userId: authenticatedUserId, error: authError } = await AuthUtils.getUserIdFromRequest(
         request,
         locals.supabase
@@ -55,26 +56,30 @@ export const GET: APIRoute = async ({ request, locals }) => {
       }
     }
 
+    // Use service role client to bypass RLS and get stats for all users
+    const { getServerSupabaseClient } = await import("../../../db/supabase.server");
+    const adminClient = getServerSupabaseClient();
+
     // Fetch all necessary data in parallel
     const [generationsResult, flashcardsResult, aiFullResult, aiEditedResult, manualResult, errorLogsResult] =
       await Promise.all([
         // Get all generations with generated_count (number of proposals generated)
-        locals.supabase.from("generations").select("generated_count"),
+        adminClient.from("generations").select("generated_count"),
 
         // Get total flashcards count
-        locals.supabase.from("flashcards").select("id", { count: "exact", head: true }),
+        adminClient.from("flashcards").select("id", { count: "exact", head: true }),
 
         // Get ai-full flashcards
-        locals.supabase.from("flashcards").select("id", { count: "exact", head: true }).eq("source", "ai-full"),
+        adminClient.from("flashcards").select("id", { count: "exact", head: true }).eq("source", "ai-full"),
 
         // Get ai-edited flashcards
-        locals.supabase.from("flashcards").select("id", { count: "exact", head: true }).eq("source", "ai-edited"),
+        adminClient.from("flashcards").select("id", { count: "exact", head: true }).eq("source", "ai-edited"),
 
         // Get manual flashcards
-        locals.supabase.from("flashcards").select("id", { count: "exact", head: true }).eq("source", "manual"),
+        adminClient.from("flashcards").select("id", { count: "exact", head: true }).eq("source", "manual"),
 
         // Get error logs count
-        locals.supabase.from("generation_error_logs").select("id", { count: "exact", head: true }),
+        adminClient.from("generation_error_logs").select("id", { count: "exact", head: true }),
       ]);
 
     // Calculate MS-01: Jakość generacji AI
