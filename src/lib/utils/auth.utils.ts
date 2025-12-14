@@ -51,6 +51,55 @@ export const AuthUtils = {
   },
 
   /**
+   * Extract user ID from request (token or cookies)
+   * Uses SSR client from middleware (locals.supabase)
+   * @param request - The incoming HTTP request
+   * @param supabase - SSR Supabase client from middleware
+   * @returns Object with userId or error
+   */
+  async getUserIdFromRequest(
+    request: Request,
+    supabase: SupabaseClient
+  ): Promise<{ userId: string | null; error: ApiError | null }> {
+    const authHeader = request.headers.get("authorization");
+    const token = this.extractBearerToken(authHeader);
+
+    if (token) {
+      // Verify JWT token with SSR client (can handle tokens)
+      const { user, error: authError } = await this.verifyToken(supabase, token);
+
+      if (authError || !user) {
+        return {
+          userId: null,
+          error: authError || {
+            message: "Invalid or expired token",
+            code: "UNAUTHORIZED",
+          },
+        };
+      }
+
+      return { userId: user.id, error: null };
+    }
+
+    // Check session from cookies
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+
+    if (!session?.user?.id) {
+      return {
+        userId: null,
+        error: {
+          message: "Authentication required",
+          code: "UNAUTHORIZED",
+        },
+      };
+    }
+
+    return { userId: session.user.id, error: null };
+  },
+
+  /**
    * Check if user has permission to perform generation operations
    */
   async checkGenerationPermission(

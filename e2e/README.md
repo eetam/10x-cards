@@ -19,15 +19,20 @@ cp .env.test.example .env.test
 ```
 
 Update `.env.test` with:
+
 - `SUPABASE_URL`: Your test project URL (from Supabase Dashboard → Connect)
 - `PUBLIC_SUPABASE_KEY`: Your anon/public key
+- `SUPABASE_KEY`: Your anon key (same as PUBLIC_SUPABASE_KEY, used for fallback)
+- `SUPABASE_SERVICE_ROLE_KEY`: (Optional) Service role key for faster teardown cleanup
 - `E2E_USERNAME`: Test user email (create manually in Supabase Dashboard → Authentication → Users)
 - `E2E_PASSWORD`: Test user password
+- `E2E_USERNAME_ID`: (Optional) Test user ID for direct cleanup without sign-in
 - `OPENROUTER_USE_MOCK=true`: Use mock AI responses for faster, deterministic tests
 
 ### 3. Create Test User
 
 In Supabase Dashboard:
+
 1. Go to **Authentication** → **Users**
 2. Click **Add user**
 3. Create user with:
@@ -35,9 +40,41 @@ In Supabase Dashboard:
    - Password: (use this in `E2E_PASSWORD`)
 4. Copy the user ID to `.env.test` as `E2E_USERNAME_ID`
 
-### 4. Migrate Database Schema
+### 4. Configure Database Migrations (One-time setup)
 
-Link your test project and apply migrations:
+**IMPORTANT:** Migrations are applied **automatically** before tests run. You just need to provide authentication once.
+
+Add to `.env.test`:
+
+```bash
+SUPABASE_ACCESS_TOKEN=your_access_token_here
+```
+
+Get your access token from: https://supabase.com/dashboard/account/tokens
+
+> **Note**: This is a **one-time configuration**. Once you add `SUPABASE_ACCESS_TOKEN` to `.env.test`, migrations will run automatically before every test run. No manual steps needed!
+
+#### Automatic Migration (Recommended)
+
+Once `SUPABASE_ACCESS_TOKEN` is set in `.env.test`, migrations run automatically:
+
+```bash
+npm run test:e2e
+```
+
+The global setup will:
+
+1. Detect if database schema exists
+2. Automatically link to your test project (if needed)
+3. Apply all migrations from `supabase/migrations/`
+4. Verify schema was created
+5. Run tests
+
+**No manual steps required!** 🎉
+
+#### Manual Setup (Alternative)
+
+If you prefer to run migrations manually:
 
 ```bash
 # Link to test database
@@ -47,19 +84,24 @@ supabase link --project-ref YOUR_PROJECT_REF
 supabase db push
 ```
 
+Then run tests - they will skip migration step if schema already exists.
+
 ## Running Tests
 
 ### Run all E2E tests
+
 ```bash
 npm run test:e2e
 ```
 
 ### Run with UI mode (interactive)
+
 ```bash
 npm run test:e2e:ui
 ```
 
 ### Run in debug mode
+
 ```bash
 npm run test:e2e:debug
 ```
@@ -84,11 +126,13 @@ e2e/
 ## Test Coverage
 
 ### US-005: Generating Flashcard Proposals
+
 - ✅ Generate proposals from valid source text (1000-10000 chars)
 - ✅ Redirect to generation review page
 - ✅ Display generated proposals
 
 ### US-006: Reviewing and Accepting Proposals
+
 - ✅ Accept flashcard proposals
 - ✅ Reject flashcard proposals
 - ✅ Mixed acceptance and rejection
@@ -116,16 +160,19 @@ This ensures each test run starts with a clean state.
 ## Troubleshooting
 
 ### Authentication Fails
+
 - Verify `E2E_USERNAME` and `E2E_PASSWORD` in `.env.test`
 - Check test user exists in Supabase Dashboard
 - Ensure test user is confirmed (check email verification)
 
 ### Tests Timeout
+
 - Increase timeout in `playwright.config.ts`
 - Check if dev server is running (`npm run dev:e2e`)
 - Verify network connectivity to Supabase
 
 ### RLS Errors
+
 - Ensure migrations were applied: `supabase db push`
 - Verify test user is authenticated in teardown
 - Check RLS policies allow test user operations

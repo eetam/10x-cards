@@ -1,5 +1,6 @@
 import { test, expect, setupAuthenticatedSession } from "./fixtures/auth.fixture";
 import { SAMPLE_TEXT_JAVASCRIPT, isTextValidForGeneration } from "./helpers/test-data";
+import { cleanupTestData } from "./helpers/teardown";
 
 /**
  * E2E Tests for Flashcard Generation Flow
@@ -11,6 +12,11 @@ test.describe("Flashcard Generation Flow", () => {
   test.beforeEach(async ({ authPage }) => {
     // Setup: Login with test user
     await setupAuthenticatedSession(authPage);
+  });
+
+  test.afterEach(async () => {
+    // Clean up test data after each test to avoid duplicates in next test
+    await cleanupTestData();
   });
 
   test("US-005: Should generate flashcard proposals from source text", async ({ generationPage }) => {

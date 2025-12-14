@@ -34,8 +34,31 @@ export class AuthPage {
     await this.passwordInput.fill(password);
     await this.submitButton.click();
 
-    // Wait for redirect to dashboard
-    await this.page.waitForURL("/", { timeout: 10000 });
+    // Wait for either:
+    // - successful navigation away from /login
+    // - an in-form error alert
+    const errorAlert = this.page.locator('[role="alert"]');
+
+    const redirectPromise = this.page.waitForURL(
+      (url) => {
+        const pathname = new URL(url).pathname;
+        return !pathname.startsWith("/login");
+      },
+      { timeout: 30_000 }
+    );
+
+    const errorPromise = errorAlert.waitFor({ state: "visible", timeout: 30_000 });
+
+    const outcome = await Promise.race([
+      redirectPromise.then(() => "redirect" as const),
+      errorPromise.then(() => "error" as const),
+    ]);
+
+    if (outcome === "error") {
+      const message = (await errorAlert.textContent())?.trim() || "Unknown login error";
+      throw new Error(`Login failed: ${message}`);
+    }
+
     await this.page.waitForLoadState("networkidle");
   }
 

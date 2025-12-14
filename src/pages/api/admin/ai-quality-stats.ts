@@ -37,21 +37,17 @@ interface AIQualityStats {
  */
 export const GET: APIRoute = async ({ request, locals }) => {
   try {
-    // Authentication required (but not admin-only)
     const defaultUserId = EnvConfig.getDefaultUserId();
 
     if (!defaultUserId) {
-      const authHeader = request.headers.get("authorization");
-      const token = AuthUtils.extractBearerToken(authHeader);
+      // Normal authentication flow - use SSR client from middleware (locals.supabase)
+      const { userId: authenticatedUserId, error: authError } = await AuthUtils.getUserIdFromRequest(
+        request,
+        locals.supabase
+      );
 
-      if (!token) {
-        return ResponseUtils.createAuthErrorResponse("Authentication required");
-      }
-
-      const { user, error: authError } = await AuthUtils.verifyToken(locals.supabase, token);
-
-      if (authError || !user) {
-        return ResponseUtils.createAuthErrorResponse(authError?.message || "Invalid or expired token");
+      if (authError || !authenticatedUserId) {
+        return ResponseUtils.createAuthErrorResponse(authError?.message || "Authentication required");
       }
     }
 

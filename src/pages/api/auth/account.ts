@@ -34,23 +34,24 @@ export const prerender = false;
 
 export const DELETE: APIRoute = async ({ request, locals }) => {
   try {
-    // Check if user is authenticated
-    const authHeader = request.headers.get("Authorization");
-    const token = AuthUtils.extractBearerToken(authHeader);
+    // Normal authentication flow - use SSR client from middleware (locals.supabase)
+    const { userId: authenticatedUserId, error: authError } = await AuthUtils.getUserIdFromRequest(
+      request,
+      locals.supabase
+    );
 
-    if (!token) {
-      return ResponseUtils.createAuthErrorResponse("Wymagane uwierzytelnienie");
+    if (authError || !authenticatedUserId) {
+      return ResponseUtils.createAuthErrorResponse(authError?.message || "Wymagane uwierzytelnienie");
     }
 
-    // Verify token and get user
-    if (!locals.supabase) {
-      return ResponseUtils.createErrorResponse("Serwis autentykacji jest niedostępny", "SERVICE_UNAVAILABLE", 500);
-    }
+    // Get user details for email
+    const {
+      data: { user },
+      error: userError,
+    } = await locals.supabase.auth.getUser();
 
-    const { user, error: authError } = await AuthUtils.verifyToken(locals.supabase, token);
-
-    if (authError || !user) {
-      return ResponseUtils.createAuthErrorResponse("Nieprawidłowy token uwierzytelniający");
+    if (userError || !user) {
+      return ResponseUtils.createAuthErrorResponse("Nie można pobrać danych użytkownika");
     }
 
     // Parse and validate request body

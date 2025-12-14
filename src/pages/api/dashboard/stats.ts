@@ -19,21 +19,17 @@ export const GET: APIRoute = async ({ request, locals }) => {
     if (defaultUserId) {
       userId = defaultUserId;
     } else {
-      // Normal authentication flow
-      const authHeader = request.headers.get("authorization");
-      const token = AuthUtils.extractBearerToken(authHeader);
+      // Normal authentication flow - use SSR client from middleware (locals.supabase)
+      const { userId: authenticatedUserId, error: authError } = await AuthUtils.getUserIdFromRequest(
+        request,
+        locals.supabase
+      );
 
-      if (!token) {
-        return ResponseUtils.createAuthErrorResponse("Authentication required");
+      if (authError || !authenticatedUserId) {
+        return ResponseUtils.createAuthErrorResponse(authError?.message || "Authentication required");
       }
 
-      const { user, error: authError } = await AuthUtils.verifyToken(locals.supabase, token);
-
-      if (authError || !user) {
-        return ResponseUtils.createAuthErrorResponse(authError?.message || "Invalid or expired token");
-      }
-
-      userId = user.id;
+      userId = authenticatedUserId;
     }
 
     // Calculate start of today (midnight UTC)
