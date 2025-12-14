@@ -48,10 +48,18 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       cookies,
     });
 
+    // Get the origin from the request to construct the redirect URL
+    // This ensures email confirmation links point to the correct domain (not localhost)
+    const requestUrl = new URL(request.url);
+    const redirectTo = `${requestUrl.origin}/login`;
+
     // Register user in Supabase Auth
     const { data, error } = await supabase.auth.signUp({
       email: validatedData.email,
       password: validatedData.password,
+      options: {
+        emailRedirectTo: redirectTo,
+      },
     });
 
     if (error) {
